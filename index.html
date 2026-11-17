@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-110</b> · 2026/11/13</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-111</b> · 2026/11/17</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -356,6 +356,10 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
         <button class="lgbtn" onclick="lgLoginPwd()">登　入</button>
         <div class="lghint"><b>集團內部</b>可直接打工號；帳號密碼與 <b>OMS 組織主檔共用</b>。<br><b>外部查核人員</b>請用管理者核發的 Email。<br>若顯示不在名單，請洽管理者開通 GHG。</div>
         <div class="lglink"><a onclick="lgShowAdmin()">🔑 管理員登入</a></div>
+      </div>
+
+      <div id="lg_sso" style="display:none">
+        <div class="lgsub" style="margin:18px 0;font-size:14px;text-align:center;line-height:1.8">🔄 從 SyncHub 進入，正在確認身分…</div>
       </div>
 
       <div id="lg_chg" style="display:none">
@@ -2465,7 +2469,13 @@ const AUTH_URL='https://drfqoraijhzvvllncbei.supabase.co';   // = OMS 同一 Aut
 const AUTH_KEY='sb_publishable_PG_IHNnOMAe3oTMV6yV25w_-U-FjDwq';
 const ADMIN_EMAIL='admin@id.syncmold.com.tw';   // V52fix:OMS drfqo 管理員合成email(非vwuse的yc.huang)
 function lgErr(m){const e=document.getElementById('lg_err'); if(e){e.textContent=m||''; e.style.display=m?'block':'none';}}   // V68-1:.lgerr 樣式表預設 none,display '' 會落回 none→紅字永遠不顯(打錯密碼無提示);改 block
-function _lgPanel(id){['lg_normal','lg_admin','lg_guest','lg_chg'].forEach(x=>{const el=document.getElementById(x); if(el)el.style.display=(x===id)?'':'none';}); lgErr('');}
+/* V129-111：從 SyncHub 大廳點 GHG 圖示＝網址帶「#sso=票」（OMS V327 發的一次性票，60 秒、只能用一次）。
+   開頁當下就把票收起來、把網址上的 #sso=… 清掉（不留在網址列與瀏覽紀錄）；lgInit 再拿去換登入身分（lgSsoEnter）。 */
+let _ghgSsoTk=(function(){ try{ const m=/^#sso=([^&]*)/.exec(location.hash||''); if(!m)return '';
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  let t=''; try{ t=decodeURIComponent(m[1]); }catch(e){ t=''; }
+  return (t&&t.length<=100)?t:''; }catch(e){ return ''; } })();
+function _lgPanel(id){['lg_normal','lg_admin','lg_guest','lg_chg','lg_sso'].forEach(x=>{const el=document.getElementById(x); if(el)el.style.display=(x===id)?'':'none';}); lgErr('');}
 function lgShowAdmin(){_lgPanel('lg_admin');const p=document.getElementById('lga_pwd');if(p)p.focus();}
 function lgShowGuest(){_lgPanel('lg_guest');const p=document.getElementById('lgg_email');if(p)p.focus();}
 function lgBackNormal(){_lgPanel('lg_normal');}
@@ -2486,7 +2496,7 @@ async function lgSelfRow(emp){   /* V129-110：登入後讀「自己那一筆」
   const e=String(emp==null?'':emp).trim(); if(!e)return {none:true}; if(!sb)return {err:window._sbErr||'連線未設定'};
   let r; try{ r=await sb.rpc('oms_my_access'); }catch(x){ r={error:x}; }
   if(r.error)return {err:String(r.error.message||r.error)};
-  const rows=(r.data||[]).filter(x=>String(x.emp_id||'').toUpperCase()===e.toUpperCase());   /* 回來的應該就是自己；工號對不上就當沒有 */
+  const rows=(r.data||[]).filter(x=>e==='*'||String(x.emp_id||'').toUpperCase()===e.toUpperCase());   /* 回來的應該就是自己；工號對不上就當沒有。V129-111：'*'＝大廳帶票進來、事先不知道工號，回來的那一列（只會是登入者自己）就是 */
   if(!rows.length)return {none:true};
   const ok=rows.find(x=>x.active===true&&lgSysHas(x.systems,'GHG')); if(!ok)return {};
   return {p:{emp_id:ok.emp_id,name:ok.name,factory_code:ok.factory_code,active:true}}; }
@@ -2526,6 +2536,32 @@ async function lgChangePwd(){
 // V54:工號/Email 即時驗名單(比照 MHR「✓ 王小明 · jane@…」)
 async function lgIdHint(final){ const el=document.getElementById('lg_idhint'); if(el)el.textContent=''; }   /* V129-108：登入前不再顯示姓名／Email（計畫書決定 1：使用者 261112「拿掉，登入後顯示」）；登入後右上角會顯示姓名 */
 // V54:SyncHub 同分頁身分便利(有就免打;沒有就登入卡;不依賴)
+/* V129-111：大廳帶票進來 → 換成登入身分（OMS 後端函式 sso-exchange，介面見 OMS_回覆GitHub安全_大廳點卡片先發票上線_261116.md 第 6 點）。
+   換到＝跟打密碼登入成功後走同一條路（存登入憑證 → 讀自己那一筆授權 → 首次登入要改密碼 → lgLogin 讀 GHG 角色）；授權照舊判斷，沒授權照擋。
+   換不到（票用過／過期／網域沒開／連不上／10 秒沒回）＝不報錯，照常顯示登入頁。回 true＝已處理（進去了或已顯示原因）；false＝照原本開頁流程。 */
+async function lgSsoEnter(tk){
+  _lgPanel('lg_sso');
+  let j=null;
+  try{ const ac=(typeof AbortController==='function')?new AbortController():null; const to=ac?setTimeout(()=>ac.abort(),10000):0;
+    const r=await fetch(AUTH_URL+'/functions/v1/sso-exchange',{method:'POST',headers:{apikey:AUTH_KEY,'Content-Type':'application/json'},body:JSON.stringify({ticket:tk,system:'GHG'}),signal:ac?ac.signal:undefined});
+    if(to)clearTimeout(to);
+    if(r.ok){ const d=await r.json().catch(()=>null); if(d&&d.ok===true&&d.access_token)j=d; }
+  }catch(e){ j=null; }
+  if(!j){ _lgPanel('lg_normal'); return false; }
+  lgClearTok(); try{sessionStorage.removeItem(LGKEY);}catch(e){}   /* 同分頁原本若有別人的登入，換成大廳這個人 */
+  try{sessionStorage.setItem('ghg_jwt',j.access_token);sessionStorage.setItem('ghg_rt',j.refresh_token||'');}catch(e){}
+  const sr=await lgSelfRow('*');
+  if(sr.err){ lgClearTok(); _lgPanel('lg_normal'); lgErr('已從 SyncHub 帶入身分，但讀不到授權資料（'+sr.err+'），請稍後再試，或用工號＋密碼登入'); return true; }
+  if(!sr.p){ lgClearTok(); _lgPanel('lg_normal'); lgErr(sr.none?'這個 SyncHub 帳號不在授權名單上，請洽 DTO':'這個帳號沒有 GHG 的授權（或已停用），請洽 DTO 在 SyncHub 授權頁開通'); return true; }
+  const p=Object.assign({},sr.p,{hasOms:true,authEmail:String(j.email||'').toLowerCase()});
+  try{sessionStorage.setItem('ghg_jwt_emp',String(p.emp_id));}catch(e){}
+  let u=null; try{ const ur=await fetch(AUTH_URL+'/auth/v1/user',{headers:{apikey:AUTH_KEY,Authorization:'Bearer '+j.access_token}}); if(ur.ok)u=await ur.json(); }catch(e){ u=null; }   /* 首次登入要改密碼的標記（同 lgNeedChange）；讀不到就不擋 */
+  _lgPanel('lg_normal');
+  if(u&&lgNeedChange({user:u})){ window._lgPending=p; lgShowChange(); return true; }
+  window._ghgAnonDenied=true;   /* 開頁時沒帶憑證送出的讀取可能還沒回來；登入成功一律重新整理一次，這次全部帶登入憑證（同分頁登入會保留） */
+  await lgLogin(p,false);
+  return true;
+}
 function lgTrySso(){ return null; }   /* V129-108：拿掉。它靠登入前讀的名單找人，名單不讀就走不通；而且 GHG（ghg.syncmold.com.tw）跟 OMS（synchub.syncmold.com.tw）不同網域，瀏覽器儲存本來就讀不到對方的 oms_session_v1 */
 /* V129-55：外部查核人員——用自己的登入憑證讀 GHG 自建名單裡自己那一列，檢查啟用／到期；回傳補好資料的 p，或錯誤訊息 */
 async function extVerify(p){
@@ -2590,6 +2626,7 @@ const LG_NET_MSG='連線失敗，請重新整理頁面再試（一直這樣請�
 /* V129-110：原本這裡的 lgLoadList（登入後讀全部 GHG 授權者的工號、姓名、Email）拿掉——「誰改的」改成只查畫面上出現的帳號（whoFlush） */
 async function lgInit(){
   try{var _vb=document.querySelector('.s b');var _lv=document.getElementById('lgver');if(_vb&&_lv)_lv.textContent='系統版本 '+_vb.textContent.replace('GHG系統','');}catch(_e){}   /* V101-2：登入頁版號＝頁首版號單一出處 */
+  if(_ghgSsoTk){ const tk=_ghgSsoTk; _ghgSsoTk=''; try{ if(await lgSsoEnter(tk))return; }catch(e){ _lgPanel('lg_normal'); } }   /* V129-111：大廳帶票進來先換票；換不到照原本流程 */
   try{
     /* V129-108：開頁不讀授權名單、不走「SyncHub 同分頁免打密碼」；同分頁重新整理＝有登入憑證才還原，還原時讀自己那一筆 */
     const saved=sessionStorage.getItem(LGKEY);   // 同分頁 session 記住(關分頁重登)
@@ -2613,7 +2650,7 @@ async function lgLogin(p,silent){
   const {data:rl,error:rlErr}=await sb.from('ghg_user_roles').select('*').eq('emp_id',p.emp_id);
   const r=(rl||[])[0];
   if(rlErr){ if(!silent)lgErr('讀不到 GHG 角色（'+rlErr.message+'）——可能是登入逾時，請重新用工號＋密碼登入'); sessionStorage.removeItem(LGKEY); return; }   /* V129-41-2 */
-  if(!r){ if(!silent)lgErr(sessionStorage.getItem('ghg_jwt')?'密碼正確，但此帳號尚未指派 GHG 角色（無權限）——請洽系統管理於權限頁指派角色':'登入逾時，請重新用工號＋密碼登入'); sessionStorage.removeItem(LGKEY); return; }   // V55-2fix:lg_msg(V51殘留)→lgErr
+  if(!r){ if(!silent)lgErr(sessionStorage.getItem('ghg_jwt')?'身分確認無誤，但此帳號尚未指派 GHG 角色（無權限）——請洽系統管理於權限頁指派角色':'登入逾時，請重新用工號＋密碼登入'); sessionStorage.removeItem(LGKEY); return; }   // V55-2fix:lg_msg(V51殘留)→lgErr
   curGhgUser={emp_id:p.emp_id,name:p.name,factory_code:p.factory_code,role:r.role,scope:(r.role==='admin'||r.role==='esg')?['*']:(r.scope||[p.factory_code].filter(Boolean)),roleName:(GHGROLES[r.role]||{}).n||r.role};   /* V129-63：ESG小組、系統管理一律全部廠區（使用者 261027「ESG 管全集團」；資料庫批306 同一條） */
   sessionStorage.setItem(LGKEY,p.emp_id);
   if(window._ghgAnonDenied&&!silent){ location.reload(); return; }   /* V129-54：登入前的讀取被擋（資料保護第二段後一定會）→ 重新整理一次，這次全部帶登入憑證；同分頁登入會保留 */
