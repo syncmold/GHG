@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-112</b> · 2026/11/17</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-112-1</b> · 2026/11/17</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -4280,7 +4280,7 @@ function trnrErrTxt(e){   /* 審核修正：資料庫錯誤 → 白話；英文�
 function trnrErrItem(e){ const o=trnrErrTxt(e); return '<div class="item" style="color:#a33"'+(o.tip?' title="'+facEsc(o.tip)+'"':'')+'>'+facEsc(o.t)+'</div>'; }
 /* ── V129-107：係數庫 › 對照表 › ESG 個案決定（示意＝待討論確認\程式寫死資料_搬資料庫提案\GHG_程式寫死資料搬資料庫_示意_1_261112.png；使用者 261112「可以，一起做」） ── */
 const ESGRV={f:'active',all:null,err:'',log:null,logErr:'',logOpen:false};
-const ESGR_KZH={cm_nc:['員工通勤','指定不計入'],wst_ef_fix:['營運廢棄物','收集表運輸係數更正'],trn_place_region:['上游運輸、下游運輸','地點算哪一區'],fx_scope_group:['匯率','適用範圍的群組'],cm_bus_fuel:['員工通勤','公司大巴的油（電）是誰加的']};
+const ESGR_KZH={cm_nc:['C07 員工通勤','指定不計入'],wst_ef_fix:['C05 營運廢棄物','收集表運輸係數更正'],trn_place_region:['C04 上游運輸、C09 下游運輸','地點算哪一區'],fx_scope_group:['匯率','適用範圍的群組'],cm_bus_fuel:['C07 員工通勤','公司大巴的油（電）是誰加的']};   /* V129-112-1：類別加代號（使用者 261117） */
 const ESGR_RGZH={TW:'台灣',CN:'中國',ALL:'其他（全球表）'};
 function esgrCan(){ return !!(typeof curGhgUser!=='undefined'&&curGhgUser&&(curGhgUser.role==='admin'||curGhgUser.role==='esg')&&!(typeof READONLY!=='undefined'&&READONLY)); }
 function esgrE(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -4347,7 +4347,7 @@ function esgrAdd(){ if(!esgrCan())return;
   const veh=(typeof CM_ORDER!=='undefined'?CM_ORDER:[]).map(x=>'<option>'+esgrE(x[1])+'</option>').join('');
   const row=(lb,inner)=>'<div class="item" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-weight:700;min-width:92px">'+lb+'</span>'+inner+'</div>';
   const ip='style="padding:3px 8px;font:inherit"';
-  const h=row('種類','<select id="esga_k" '+ip+' onchange="esgrAddKind()"><option value="cm_nc">員工通勤：某廠某年某種交通工具不計入</option><option value="trn_place_region">運輸：地點寫法算哪一區</option><option value="wst_ef_fix">營運廢棄物：收集表運輸係數更正</option></select>')
+  const h=row('種類','<select id="esga_k" '+ip+' onchange="esgrAddKind()"><option value="cm_nc">C07 員工通勤：某廠某年某種交通工具不計入</option><option value="trn_place_region">C04／C09 運輸：地點寫法算哪一區</option><option value="wst_ef_fix">C05 營運廢棄物：收集表運輸係數更正</option></select>')
     +'<div id="esga_cm">'+row('廠區 *','<select id="esga_site" '+ip+'>'+sites+'</select>')+row('年度 *','<input id="esga_year" type="number" '+ip+' style="width:90px;padding:3px 8px;font:inherit" placeholder="例 2026">')+row('交通工具 *','<select id="esga_veh" '+ip+'>'+veh+'</select>')+'</div>'
     +'<div id="esga_trn" style="display:none">'+row('地點寫法 *','<input id="esga_place" '+ip+' style="width:220px;padding:3px 8px;font:inherit" placeholder="收集表上的寫法，例 HAO CHEN">')+row('算哪一區 *','<select id="esga_rg" '+ip+'><option value="CN">中國</option><option value="TW">台灣</option><option value="ALL">其他（全球表）</option></select>')+'</div>'
     +'<div id="esga_wst" style="display:none">'+row('收集表上的值 *','<input id="esga_from" type="number" step="any" '+ip+' style="width:120px;padding:3px 8px;font:inherit" placeholder="例 1.31">')+row('正確的值 *','<input id="esga_to" type="number" step="any" '+ip+' style="width:120px;padding:3px 8px;font:inherit" placeholder="例 0.131">')+'</div>'
