@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-112-2</b> · 2026/11/20</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-112-3</b> · 2026/11/20</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -669,7 +669,7 @@ async function siteMasterLoad(force){
   if(SITEM_OK&&!force)return SITEM;
   if(SITEM_P)return SITEM_P;
   SITEM_P=(async()=>{ try{
-    const [g,f]=await Promise.all([sb.from('ghg_sites').select('*'),sb.from('factories').select('code,name,name_en,country_code,country,bu,status,active,sort_order')])   /* OMS 廠區主檔是欄位層級授權，不能用 *（261101 實測） */;
+    const [g,f]=await Promise.all([sb.from('ghg_sites').select('*'),sb.from('oms_factories').select('code,name,name_en,country_code,country,bu,status,active,sort_order')])   /* OMS 廠區主檔是欄位層級授權，不能用 *（261101 實測） */;
     if(g.error)throw g.error;
     SITE_OMS=f.error?null:(f.data||[]); SITE_OMS_ERR=f.error?String(f.error.message||f.error):'';
     const om={}; (SITE_OMS||[]).forEach(x=>{ if(x&&x.code)om[x.code]=x; });
@@ -2005,7 +2005,7 @@ function permListNow(D){   /* V124-1：照現在的廠區篩選與排序出清�
 }
 async function permBuLoad(){   /* V125-1：廠區歸屬哪個 BU＝OMS 廠區主檔 factories.bu（只讀，匯出用）。讀不到要記下來——匯出時整欄寫「讀不到」，不能當成沒有 BU */
   if(window._permBU&&!window._permBU.err)return;
-  try{ const r=await sb.from('factories').select('code,bu').order('code'); if(r.error)throw r.error; const rows=r.data||[]; if(!rows.length)throw new Error('讀到 0 筆');
+  try{ const r=await sb.from('oms_factories').select('code,bu').order('code'); if(r.error)throw r.error; const rows=r.data||[]; if(!rows.length)throw new Error('讀到 0 筆');
     const map={}; rows.forEach(x=>{ map[x.code]=x.bu||''; }); window._permBU={map:map,err:''}; }
   catch(e){ window._permBU={map:{},err:String((e&&e.message)||e)}; }
 }
