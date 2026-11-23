@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-112-4</b> · 2026/11/23</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-112-5</b> · 2026/11/23</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -5001,7 +5001,7 @@ function fc12tdPaint(){ const box=document.getElementById('fc12td'); if(!box)ret
   const H=window.FC12HIST||{HY:[],K:{},srcs:[],n:0,f5:nf2}; const HY=H.HY, NY=yrs, ALLY=HY.concat(NY); const num=v=>+String(v).replace(/,/g,'');
   const tipI='一列＝一個材質的一種處理方式（賣出去的產品壞了之後怎麼處理，取最常見三種：回收、燃燒、掩埋）。'+(HY.length?HY[0]+'–'+HY[HY.length-1]+'＝各廠當年清冊用的係數，從係數值反推處理方式：8.88386＝掩埋（紙是堆肥）、紙 1,164.39015＝掩埋、6.41061＝回收或燃燒（UK 表這兩種同一個值，分不出，所以合成跨兩列的一格）。':'')+(NY.length?NY[0]+' 起＝ESG C12 收集表附表（UK Conversion Factors 2024）：回收＝Open-loop（紙＝Closed-loop）、燃燒＝Combustion、掩埋＝Landfill；其他＝玻璃與電子電器廢棄物同一組（附表 Glass 列）。綠底「預設」＝那一年 ESG 定的處理方式，各廠 C12 頁自動用那一格。':'')+'來源：'+(H.srcs.join('／')||'—');
   let h='<div style="margin:0 0 4px;font-size:15px;font-weight:800;color:var(--d)">'+facEsc(ncText('C12'))+' <span style="font-weight:400;font-size:12px;color:#a9b8b0">C12</span>　<span style="font-weight:600;font-size:13px">材質 × 處理方式 × 年度（kgCO₂e／公噸）· '+H.n+' 條</span><span title="'+facEsc(tipI)+'" style="cursor:help;color:var(--p);font-size:13px;margin-left:6px">ⓘ</span></div>'
-    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px">'+(HY.length?HY[0]+'–'+HY[HY.length-1]+'＝各廠清冊用的係數（回收、燃燒同一個值，合成一格）；':'')+(NY.length?NY[0]+' 起＝ESG 定的係數，<span style="background:#dff0e8;padding:0 4px">綠底 預設</span>＝各廠自動用的那一格；':'')+'<span style="background:#fde2e2;padding:0 4px">淡紅底</span>＝同一格有不同的值，待 ESG 指定；<span style="color:#b8860b">清冊用 …</span>＝清冊實際用、係數庫那一年沒有；各廠用哪種看下面「各廠歷年處理方式」。</div>';
+    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px">'+(HY.length?HY[0]+'–'+HY[HY.length-1]+'＝各廠清冊用的係數（回收、燃燒同一個值，兩列顯示相同的數）；':'')+(NY.length?NY[0]+' 起＝ESG 定的係數，<span style="background:#dff0e8;padding:0 4px">綠底 預設</span>＝各廠自動用的那一格；':'')+'<span style="background:#fde2e2;padding:0 4px">淡紅底</span>＝同一格有不同的值，待 ESG 指定；<span style="color:#b8860b">清冊用 …</span>＝清冊實際用、係數庫那一年沒有；各廠用哪種看下面「各廠歷年處理方式」。</div>';
   const SEP='border-left:2px solid #8fb8a3;';
   h+='<table class="fsm" style="width:100%;min-width:760px;table-layout:fixed;font-size:12.5px;margin-bottom:6px"><colgroup><col style="width:84px"><col style="width:92px"><col style="width:66px">'+ALLY.map(()=>'<col>').join('')+'<col style="width:92px"></colgroup><thead><tr><th style="text-align:left">代號</th><th style="text-align:left">材質</th><th style="text-align:left">處理方式</th>'+ALLY.map((y,i)=>'<th style="text-align:right;'+(i===HY.length&&HY.length?SEP:'')+'">'+y+'</th>').join('')+'<th style="text-align:left">單位</th></tr></thead><tbody>';
   const hc=(k,y,yi,t,rs,first)=>{ const kh=H.K[k]; const o=kh&&kh.Y[y]; const sty='text-align:right;white-space:normal;font-variant-numeric:tabular-nums;vertical-align:top';   /* 跨兩列的格數字靠上，跟回收那一列同一水平（使用者 261022） */
@@ -5017,7 +5017,7 @@ function fc12tdPaint(){ const box=document.getElementById('fc12td'); if(!box)ret
     return '<td data-y="'+y+'" style="text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;'+(i===0&&HY.length?SEP:'')+(on?'background:#dff0e8;font-weight:700':'')+'" title="'+facEsc(f?(f.factor_id+'｜'+(f.review_status||'')):'係數庫沒有這一格')+'">'+(f?nf2(c12FacVal(f).v):'<span style="color:#c3cfc9">—</span>')+'<span style="display:inline-block;width:30px;margin-left:4px;text-align:left;font-size:10px;font-weight:400;color:var(--d)">'+(on?'預設':'')+'</span>'+(f?frevFidsAct([f.factor_id],y):'')+'</td>'; };   /* 每格都留同寬的標籤位，數字才對齊（使用者 261022） */
   const UNIT='<td style="text-align:left;font-size:11px">kgCO₂e／公噸</td>';
   MK.forEach(([k,mc])=>{ const kh=H.K[k]||{Y:{},AL:[]}; const ex=[]; HY.forEach(y=>{ const o=kh.Y[y]; if(o)o.libV.concat(o.other).forEach(v=>{ const t=c12TreatOf(k,num(v)); if(t!=='回收／燃燒'&&t!=='掩埋'&&ex.indexOf(t)<0)ex.push(t); }); });
-    const n=3+ex.length; const RW=[['01','燃燒','回收／燃燒',2],['04','回收',null,0],['03','掩埋','掩埋',1]].concat(ex.map(t=>[null,t,t,1]));
+    const n=3+ex.length; const RW=[['01','燃燒','回收／燃燒',1],['03','掩埋','掩埋',1],['04','回收','回收／燃燒',1]]   /* V129-112-5：照號碼排序（使用者 261123「請按順序」）；2022～2025 回收、燃燒同一個值，兩列各顯示一次 */.concat(ex.map(t=>[null,t,t,1]));
     RW.forEach(([tc,lab,ht,rs],i)=>{ const code=tc?'C12-'+mc+'-'+tc:null;
       h+='<tr data-mat="'+k+'" data-treat="'+facEsc(lab)+'"'+(i===0?' style="border-top:2px solid #b8d2c4"':'')+'><td style="text-align:left;white-space:nowrap">'+(code||'<span style="color:#c3cfc9">—</span>')+'</td>'
         +(i===0?'<td rowspan="'+n+'" style="text-align:left;vertical-align:top"><b style="color:var(--d)">'+facEsc(KN[k].name)+'</b><div style="font-size:10.5px;color:#8a9c93">'+KN[k].en+'</div><div style="font-size:10.5px;color:#a9b8b0">'+KN[k].code+'</div></td>':'')
