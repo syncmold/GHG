@@ -13387,7 +13387,7 @@ function rldeclPanel(S,ex){
     q1+=c.coS; St+=st; if(c.fb)nFb++; if(e['收集表合計沒加到'])nOmit++;
     const tot=c.coS-st; if(Math.abs(tot)<0.00005){ if(tot!==0)add('rd',tot); return; }
     if(c.excl){ add('ex',tot,nm); return; }
-    if(e['清冊沒有這一列']&&!c.e01){ add('nol',tot,nm); return; }
+    if(e['清冊沒有這一列']&&!c.e01){ add((!e['收集表']&&e['佐證'])?'nos':'nol',tot,nm); return; }   /* V129-114-2：沒有收集表、照佐證補登的列另外講（批410 重慶富鴻齊 2025 上游租賃） */
     const P=[['xs',c.coX-st,nm]];
     if(c.e01) P.push(['e1',c.coS-c.coX,nm]);
     else if(c.efS==null||c.usdX==null) P.push(['oth',c.coS-c.coX,nm]);
@@ -13400,10 +13400,10 @@ function rldeclPanel(S,ex){
   });
   const ex3=L=>{ const m={}; L.forEach(x=>{ const o=(m[x.t]=m[x.t]||{t:x.t,n:0,d:0}); o.n++; o.d+=x.d; }); const Z=Object.values(m).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
     return Z.slice(0,3).map(x=>x.t+(x.n>1?' ×'+x.n:'')+' '+(x.d>0?'+':'')+rlf(x.d,4)+' t').join('；')+(Z.length>3?'；…等 '+Z.length+' 種':''); };
-  const T={xs:'筆收集表填的碳排跟本頁存的數不同（存的數照清冊）',ex:'筆收集表不計入／篩選隱藏、系統不算，但存的數不是 0',nol:'筆收集表有、清冊沒有（存的數記 0，系統照收集表算）',
+  const T={xs:'筆收集表填的碳排跟本頁存的數不同（存的數照清冊）',ex:'筆收集表不計入／篩選隱藏、系統不算，但存的數不是 0',nol:'筆收集表有、清冊沒有（存的數記 0，系統照收集表算）',nos:'筆沒有收集表、清冊也沒有，照佐證資料（合約、發票）補登（存的數記 0，系統照補登的金額算）',
     e1:'筆持股比例法：對方範疇一＋二 × 持股比率，跟收集表碳排不同',oth:'筆沒有美金，系統算跟收集表碳排不同',fx:'筆匯率不同（收集表換美金用的匯率跟系統匯率表不同）',fxr:'筆美金換算取位的尾差',
     ef:'筆收集表係數跟係數庫本年標準不同（系統用係數庫值）',r4:'筆收集表係數只取到小數點後幾位（系統用完整值）',nof:'筆收集表沒填係數、記 0（系統照係數庫算）',calc:'筆收集表碳排跟「美金 × 係數」對不上（存的數照收集表）',rd:'項各差不到 0.00005 t（小數位）'};
-  const items=[]; ['xs','ex','nol','e1','oth','fx','fxr','ef','r4','nof','calc','rd'].forEach(k=>{ const o=A[k]; if(o&&o.n)items.push([o.n+' '+T[k]+(o.L.length&&k!=='rd'?'。例：'+ex3(o.L):''),o.t]); });
+  const items=[]; ['xs','ex','nol','nos','e1','oth','fx','fxr','ef','r4','nof','calc','rd'].forEach(k=>{ const o=A[k]; if(o&&o.n)items.push([o.n+' '+T[k]+(o.L.length&&k!=='rd'?'。例：'+ex3(o.L):''),o.t]); });
   const ft=[]; if(nFb)ft.push(nFb+' 筆沒有係數或美金算不出，系統算照存的數（格子下面標「照存的數」）');
   if(ex.length)ft.push(ex.length+' 筆收集表不計入／篩選隱藏（'+[...new Set(ex.map(([r])=>rle(r)['不計入']||rle(r)['收集表隱藏列']))].join('；')+'），系統也不算');
   return entryDeclBox({yr:W8.year,q1:+q1.toFixed(10),S:St,grp:W8.grp,items:items,note:!!W8.note,
