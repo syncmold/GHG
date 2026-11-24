@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-114</b> · 2026/11/24</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-114-1</b> · 2026/11/24</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -16069,12 +16069,16 @@ window.xpOpen=async function(){
   const qy=+(document.getElementById('q_year')||{}).value||declMaxY(), qs=(document.getElementById('q_site')||{}).value||'';
   const sites=xpSites();
   const h='<div class="row" style="gap:10px;flex-wrap:wrap"><div class="fld" style="max-width:140px"><label>年度 *</label><select id="xp_y">'+ys.map(y=>'<option value="'+y+'"'+(y===qy?' selected':'')+'>'+y+(trialY(y)?' 試打':'')+'</option>').join('')+'</select></div>'
-    +'<div class="fld" style="max-width:280px"><label>廠區</label><select id="xp_s"><option value="">全部（'+(lgScopeAll()?'':'權限內 ')+sites.length+' 廠）</option>'+sites.map(s=>'<option value="'+s+'"'+(s===qs?' selected':'')+'>'+xpEsc(fpSiteName(s))+'</option>').join('')+'</select></div></div>'
+    +'<div class="fld" style="max-width:280px"><label>廠區</label><select id="xp_s"><option value="">全部（'+(lgScopeAll()?'':'權限內 ')+sites.length+' 廠）</option>'+(XP_RPT8.every(z=>sites.indexOf(z)>=0)?'<option value="@8">信錦 8 家（報告書主體）</option>':'')+sites.map(s=>'<option value="'+s+'"'+(s===qs?' selected':'')+'>'+xpEsc(fpSiteName(s))+'</option>').join('')+'</select></div></div>'
     +(function(){ const c=xpContactGet(), me=(curGhgUser&&curGhgUser.emp_id!=='admin'&&curGhgUser.name)||'';   /* V119-6：盤查總表表頭的填表人／電話／e-mail（選填） */
         return '<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:8px"><div class="fld" style="max-width:140px"><label>填表人（選填）</label><input id="xp_who" value="'+xpEsc(c.who!=null?c.who:me)+'" autocomplete="off"></div>'
           +'<div class="fld" style="max-width:160px"><label>電話（選填）</label><input id="xp_tel" value="'+xpEsc(c.tel||'')+'" autocomplete="off"></div>'
           +'<div class="fld" style="max-width:240px"><label>e-mail（選填）</label><input id="xp_mail" value="'+xpEsc(c.mail||'')+'" autocomplete="off"></div></div>'
-          +'<div class="fmini" style="margin-top:2px;color:#7a8f84">這三格會印在盤查總表的表頭；只記在這台電腦的瀏覽器，下次自動帶出來。</div>'; })()
+          +'<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:6px"><div class="fld" style="max-width:140px"><label>保管單位（選填）</label><input id="xp_dkeep" value="'+xpEsc(c.keep||'')+'" autocomplete="off"></div>'
+          +'<div class="fld" style="max-width:120px"><label>保存年限（選填）</label><input id="xp_dret" value="'+xpEsc(c.ret||'')+'" autocomplete="off"></div>'
+          +'<div class="fld" style="max-width:120px"><label>文件版次（選填）</label><input id="xp_dver" value="'+xpEsc(c.dver||'')+'" autocomplete="off"></div>'
+          +'<div class="fld" style="max-width:200px"><label>版本日期（選填）</label><input id="xp_dvdate" value="'+xpEsc(c.vdate||'')+'" placeholder="外部查證日期" autocomplete="off"></div></div>'
+          +'<div class="fmini" style="margin-top:2px;color:#7a8f84">這幾格會印在盤查總表的表頭；保管單位、保存年限、文件版次、版本日期＝文件管制欄，集團頁印這裡填的，各廠頁用公式接集團頁（ESG 清冊「版本日期」的註解寫「外部查證日期」）。只記在這台電腦的瀏覽器，下次自動帶出來。</div>'; })()   /* V129-114-1：文件管制欄 */
     +'<div class="fmini" style="margin-top:8px;line-height:1.6">Excel 最前面是「盤查總表」（照 ESG 的 GHG Protocol 盤查清冊格式，有底色和框線；選全部廠區＝集團合計一頁＋每廠一頁，集團頁是各廠相加的公式）；每廠總表後面接一頁「清冊」明細（照 ESG 清冊範本 44 欄，一個排放源一年一列，總表的數字是加總這一頁的公式）。再後面五頁是佐證：★重點（範疇一／二／三合計）、排放源彙總（每廠每類）、逐筆明細（碳排能驗算的寫成公式；有「新編碼」欄）、係數表（也有「新編碼」欄）、匯率表。只讀資料，不會改任何東西。</div><div id="xp_msg" class="fmini" style="margin-top:6px;color:#a33"></div>';
   let d=document.getElementById('s101dlg'); if(!d){ d=document.createElement('div'); d.id='s101dlg'; d.innerHTML='<div class="card"><h3></h3><div id="s101list"></div><div class="foot"></div></div>'; document.body.appendChild(d); }
   d.querySelector('h3').textContent='📥 匯出盤查清冊'; d.querySelector('#s101list').innerHTML=h;
@@ -16084,7 +16088,7 @@ function xpScope(c){ const s=SRC.find(z=>z.c===c); if(s)return s.sc; return /^A/
 function xpVoid(r){ return /留痕/.test(String(r.input_method||''))&&!(+r.quantity)&&!(+r.co2e_draft)&&!(+r.co2e_location); }
 window.xpGo=async function(){
   const y=+document.getElementById('xp_y').value, s1=document.getElementById('xp_s').value, msg=t=>{ const m=document.getElementById('xp_msg'); if(m)m.textContent=t; };
-  const sites=s1?[s1]:xpSites(); if(!sites.length){ msg('您的權限內沒有廠區'); return; }
+  const g8=s1==='@8', sites=g8?XP_RPT8.filter(z=>xpSites().indexOf(z)>=0):(s1?[s1]:xpSites()); if(!sites.length){ msg('您的權限內沒有廠區'); return; }   /* V129-114-1：@8＝信錦 8 家（報告書主體） */
   msg('讀取 '+y+' 年資料中…');
   try{
     const {data,error}=await sbAll(()=>sb.from('ghg_activity_data').select('record_id,site_id,data_year,data_month,category_id,equipment_name,source_name,attr1,attr2,quantity,quantity_unit,measurement_type,input_method,ef_value,ef_unit,ef_source,gwp,gas_type,factor_id,co2e_draft,co2e_location,extra').eq('data_year',y).in('site_id',sites).order('record_id'));
@@ -16154,7 +16158,7 @@ window.xpGo=async function(){
     const M=S.length;
     /* ── ★重點 ── */
     const tot={}; rows.forEach(r=>{ const sc=xpScope(r.category_id); tot[sc]=(tot[sc]||0)+(+r.co2e_draft||0); });
-    const K=[['GHG 盤查清冊'],[],['年度',y+(trialY(y)?'（試打，不算正式數字）':'')],['廠區',s1?fpSiteName(s1):'全部（'+(lgScopeAll()?'':'權限內 ')+sites.length+' 廠）'],['產出時間',new Date().toLocaleString('zh-TW')],
+    const K=[['GHG 盤查清冊'],[],['年度',y+(trialY(y)?'（試打，不算正式數字）':'')],['廠區',g8?'信錦 8 家（報告書主體：'+sites.join('、')+'）':s1?fpSiteName(s1):'全部（'+(lgScopeAll()?'':'權限內 ')+sites.length+' 廠）'],['產出時間',new Date().toLocaleString('zh-TW')],
       ['系統版本',(document.body.innerText.match(/GHG系統V[\d-]+/)||[''])[0]],['明細筆數',rows.length],['其中碳排是公式的',nf],['其中有新編碼的',nCode],['　其中補判的',nFill],[],['範疇','碳排放量 Emissions tCO₂e（市場基礎）']];
     ['範疇一','範疇二','範疇三'].forEach(sc=>K.push([sc,{t:'n',f:'SUMIFS(排放源彙總!$G$2:$G$'+M+',排放源彙總!$B$2:$B$'+M+',"'+sc+'")',v:+(tot[sc]||0).toFixed(10)}]));
     const kr=K.length; K.push(['合計',{t:'n',f:'SUM(B'+(kr-2)+':B'+kr+')',v:+((tot['範疇一']||0)+(tot['範疇二']||0)+(tot['範疇三']||0)).toFixed(10)}]);
@@ -16170,12 +16174,13 @@ window.xpGo=async function(){
     FX.sort((a,b)=>String(a.rate_type).localeCompare(String(b.rate_type))||String(a.currency).localeCompare(String(b.currency))).forEach(r=>X.push([r.rate_type,r.currency,r.to_usd?+(1/r.to_usd).toPrecision(8):null,r.to_usd,r.source||'']));
     const wb=XLSX.utils.book_new();
     const add=(name,aoa,w)=>{ const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=w.map(x=>({wch:x})); XLSX.utils.book_append_sheet(wb,ws,name); };
-    const gv=id=>String((document.getElementById(id)||{}).value||'').trim(), CT={who:gv('xp_who'),tel:gv('xp_tel'),mail:gv('xp_mail')}; xpContactSet(CT);   /* V119-6 */
-    const PS=xpProtoSheets({rows:rows,D:D,y:y,sites:sites,wb:wb,contact:CT,FF:FF,FG:FG,nc:xpNewCode});   /* V119-5：盤查總表放最前面；V129-113：加係數給清冊明細頁 */
+    const gv=id=>String((document.getElementById(id)||{}).value||'').trim(), CT={who:gv('xp_who'),tel:gv('xp_tel'),mail:gv('xp_mail'),keep:gv('xp_dkeep'),ret:gv('xp_dret'),dver:gv('xp_dver'),vdate:gv('xp_dvdate')}; xpContactSet(CT);   /* V129-114-1：加文件管制欄 4 格 */
+    xpHistSheet(wb,{y:y,sites:sites,g8:g8,ct:CT});   /* V129-114-1：修改歷史頁放第一頁（照 ESG 清冊） */   /* V119-6 */
+    const PS=xpProtoSheets({rows:rows,D:D,y:y,sites:sites,wb:wb,contact:CT,g8:g8,FF:FF,FG:FG,nc:xpNewCode});   /* V119-5：盤查總表放最前面；V129-113：加係數給清冊明細頁 */
     if(PS.lg){ K.push([],['清冊明細頁（V129-113）'],['明細頁列數（一個排放源一年一列）',PS.lg.n],['其中排放量寫數字、不是公式的列（原因見該列 AW 欄）',PS.lg.nv],['總表跟逐筆明細核對：差異超過 0.0001 t 的格數',PS.lg.diff.length]); PS.lg.diff.slice(0,30).forEach(d=>K.push(['　'+d]));
       K.push(['類別 3 用量跟範疇一、二對不上的列（可能沒有重算）',(PS.lg.c3||[]).length]); (PS.lg.c3||[]).forEach(d=>K.push(['　'+d])); }   /* V129-113-3 */
     add('★重點',K,[22,40]); add('排放源彙總',S,[22,8,42,12,8,16,16,16]); add('逐筆明細',D,[22,8,36,30,6,14,10,14,6,14,14,14,30,14,22,30,40,50,10]); add('係數表',C,[24,14,6,6,14,16,16,6,40,40]); add('匯率表',X,[14,8,18,16,40]);
-    const fn='GHG盤查清冊_'+y+'_'+(s1||(lgScopeAll()?'全部廠區':'權限內'+sites.length+'廠'))+'_'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'.xlsx';
+    const fn='GHG盤查清冊_'+y+'_'+(g8?'信錦8家':s1||(lgScopeAll()?'全部廠區':'權限內'+sites.length+'廠'))+'_'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'.xlsx';
     const styled=xpSave(wb,fn,PS.plan);   /* V119-6：盤查總表補底色框線 */
     msg(''); const l=document.getElementById('s101list'); if(l)l.insertAdjacentHTML('beforeend','<div class="msg ok" style="margin-top:8px">已下載 '+xpEsc(fn)+'：盤查總表 '+PS.length+' 頁'+(styled?'':'（底色框線這次沒套上，數字和公式不受影響）')+(PS.lg?'、清冊明細 '+PS.lg.n+' 列（寫數字 '+PS.lg.nv+' 列；總表跟逐筆明細差異 '+PS.lg.diff.length+' 格'+((PS.lg.c3||[]).length?'；類別 3 用量對不上 '+PS.lg.c3.length+' 列，見★重點':'')+'）':'')+'、'+rows.length+' 筆明細（其中 '+nf+' 筆碳排是公式、'+nCode+' 筆有新編碼，其中補判 '+nFill+' 筆）、'+(M-1)+' 列彙總、'+(C.length-1)+' 個係數值、'+(X.length-1)+' 筆匯率。</div>');
     window._xpLast={wb:wb,rows:rows.length,nf:nf,tot:tot,fn:fn,proto:PS,styled:styled};
@@ -16330,6 +16335,17 @@ window.yoyGo=function(i){ const f=YOY.flags[i], x=window._fuelX, F=yoyF(); if(ty
      保管單位／保存年限／文件版次／版本日期＝ESG 的文件管制欄，留空。只讀，不動資料。 ══ */
 const XP_GK=['CO2','CH4','N2O','HFCs','PFCs','SF6','NF3'];
 const XP_GROUPINFO=['信錦企業股份有限公司（集團）','新北市中和區建康路168號9樓'];
+const XP_RPT8=['SY','SH','JS','SF','FF','CF','VN','TH'];   /* V129-114-1：報告書主體＝信錦 8 家（2025 盤查報告書第三章 3.3～3.10：中和、桃園、中山、蘇州、福州、重慶、越南、泰國） */
+const XP_SHORT={SY:['中和','中和清冊'],SH:['桃園','桃園清冊'],JS:['中山富鴻齊','中山清冊'],SF:['蘇州富鴻齊','蘇州清冊'],FF:['福州富鴻齊','福州清冊'],CF:['重慶富鴻齊','重慶清冊'],VN:['越南','越南清冊'],TH:['泰國','泰國清冊'],LH:['台中陸合','台中清冊'],LT:['泰國協和','協和清冊'],LS:['蘇州陸和','陸和清冊'],KH:['冠皇'],GH:['冠華'],FQ:['富群'],KS:['鴻嘉駿'],GT:['觀音敬得'],TC:['蘇州敬得'],SG:['新加坡'],MY:['馬來西亞'],US:['信錦美國']};   /* V129-114-1：分頁名照 ESG「SBT(20家)-2025 最終版 V2」（ESG 註「分頁名稱不要改，有公式連結」）；ESG 只有 11 廠有清冊頁，其他廠＝總表名＋「清冊」 */
+function xpShort(s,led){ const a=XP_SHORT[s]; let n; if(a)n=led?(a[1]||a[0]+'清冊'):a[0]; else { const b=((FAC_SITES||[]).find(z=>z.site_id===s)||{}).site_name||s; n=led?b+'清冊':b; } return String(n).replace(/[\[\]:*?\/\\']/g,' ').slice(0,31); }   /* ESG 沒有短名的廠（例 DN）用廠區名稱 */
+window.xpHistSheet=function(wb,o){   /* V129-114-1：修改歷史頁（照 ESG 清冊第一頁：項次、發行日期、發行內容、版本、發行人員）；系統不記清冊版本，只帶這次匯出這一列 */
+  const now=new Date(), d=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const ver=(document.body.innerText.match(/GHG系統V[\d-]+/)||[''])[0], one=o.sites.length===1&&!o.g8;
+  const co=one?((XP_SITEINFO[o.sites[0]]||[])[0]||fpSiteName(o.sites[0])):XP_GROUPINFO[0].replace(/（集團）$/,'');
+  const sc=o.g8?'信錦 8 家':(one?fpSiteName(o.sites[0]):(lgScopeAll()?'全部 '+o.sites.length+' 廠':'權限內 '+o.sites.length+' 廠'));
+  const A=[[],[null,co],[null,'GHG Protocol 溫室氣體盤查清冊'],[],[null,'項次','發行日期','發行內容','版本','發行人員'],[null,1,d,'GHG 系統匯出（'+ver+'；'+o.y+' 年；'+sc+'）',o.ct.dver||'',o.ct.who||'']];
+  for(let i=0;i<17;i++)A.push([]); A.push([null,'分頁名稱不要改，有公式連結']); A.push([null,'系統不記清冊的版本歷史：第 6 列是這次匯出時系統帶的，之後的修改請往下填。']);
+  const ws=XLSX.utils.aoa_to_sheet(A); ws['!cols']=[3,8,14,60,22,12].map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb,ws,'修改歷史'); };
 const XP_SITEINFO={   /* 廠區代號：[盤查單位, 地址]；ESG 清冊原文（冠皇／富群／鴻嘉駿 ESG 寫的就是簡稱） */
   SY:['信錦企業股份有限公司','新北市中和區建康路168號9樓'],
   SH:['信鋐科技股份有限公司桃園廠','桃園市龜山區山鶯路348號(3、4樓)'],
@@ -16524,7 +16540,7 @@ window.xpLedger=function(o){
     if(b==='位置')a.lo+=ar; else if(b==='市場')a.co+=ar; else if(b==='市電'){ a.co+=ar; a.lo+=ar; } else a.co+=ar;
     Object.keys(g).forEach(q=>{ a.g[q]=(a.g[q]||0)+g[q]; }); };
   order.forEach(k=>{ const x=G[k];
-    const S=out[x.site]||(out[x.site]={aoa:[],sheet:('清冊 '+fpSiteName(x.site)).replace(/[\[\]:*?\/\\']/g,' ').slice(0,31),nv:0});
+    const S=out[x.site]||(out[x.site]={aoa:[],sheet:xpShort(x.site,1),nv:0}   /* V129-114-1：照 ESG 清冊頁名（中和清冊…） */);
     const rn=S.aoa.length+2, R=new Array(XP_LG_HD.length).fill(null);
     const proc=x.sc==='範疇三'?'其他未分類製程':(XP_PROC[x.c]||'');
     R[0]=sn(x.site); R[1]=proc; R[2]=x.cN; R[3]=(x.sc==='範疇一'||x.sc==='範疇二'||x.ln==='C1'||x.ln==='C3')?'1.原燃物料':'2.產品'; R[4]=x.nm;
@@ -16589,7 +16605,7 @@ window.xpProtoSheets=function(o){
   const GC=XP_GK.map((_,j)=>xpColL(XB+1+j)), XLN=xpColL(XB), XLOC=xpColL(XB+8), TC=['E','F','G','H','I','J','K'], COLS='ABCDEFGHIJKLMNOP'.split('');
   const S1L=[['1.1','固定式燃燒源之直接排放'],['1.2','移動式燃燒源之直接排放'],['1.3','生產過程之直接過程排放與移除'],['1.4','人為系統釋放的溫室氣體直接暫時性排放'],['1.5','土地使用、土地變更及林業之直接排放與移除']];
   const S3L=['採購上游原料、產品或服務','採購資本商品','燃料或能源活動','上游運輸和貨物配送','營運廢棄物','商務旅行','員工通勤','上游租賃資產使用','下游運輸和貨物配送','銷售產品加工','銷售產品使用','銷售產品的最終處置階段','下游出租資產的間接','特許經營權','投資相關'];
-  const nmOf=k=>(k==='*'?(lgScopeAll()?'總表_集團':'總表_權限內合計'):'總表 '+fpSiteName(k)).replace(/[\[\]:*?\/\\']/g,' ').slice(0,31);
+  const nmOf=k=>k==='*'?((lgScopeAll()||o.g8)?'集團':'權限內合計'):xpShort(k,0);   /* V129-114-1：分頁名照 ESG 短名（集團、中和、桃園…） */
   const withData=sites.filter(s=>A[s]), siteSheets=withData.map(nmOf), plan=[];
   function one(k){
     const grp=(k==='*'), lgS=(!grp&&LG&&LG.out[k])?LG.out[k]:null, lgA=LG?(grp?LG.A['*']:LG.A[k]):null;
@@ -16611,11 +16627,12 @@ window.xpProtoSheets=function(o){
     const s3=S3L.reduce((s,_,i)=>s+X('C'+(i+1)).co,0), tot=s1+s2m+s3;
     const r4=v=>tot?+(v/tot).toFixed(4):0, P=(R,v,st)=>put('L'+R,pct('IF($D$40=0,0,ROUND(D'+R+'/$D$40,4))',r4(v)),st||'pct');
     const g1=q=>S1L.reduce((s,x)=>s+(X(x[0]).g[q]||0),0);
-    const info=grp?(lgScopeAll()?XP_GROUPINFO:['權限內廠區（'+sites.join('、')+'）','']):(XP_SITEINFO[k]||[((FAC_SITES||[]).find(z=>z.site_id===k)||{}).site_name||k,'']);
+    const info=grp?((lgScopeAll()||o.g8)?XP_GROUPINFO:['權限內廠區（'+sites.join('、')+'）','']):(XP_SITEINFO[k]||[((FAC_SITES||[]).find(z=>z.site_id===k)||{}).site_name||k,'']);
     /* ── 列 1～7：表頭（照 ESG 清冊） ── */
     put('A1','溫室氣體盤查總表','title'); put('A2','組織/營運邊界調查表','sub');
-    put('D1','保管單位\nStorage','docL'); put('E1','','docV'); put('F1','文件版次','docL'); put('G1','','docV');
-    put('D2','保存年限\nRetention Period','docL'); put('E2','','docV'); put('F2','版本日期','docL'); put('G2','','docV');
+    const gN=withData.length>1?nmOf('*'):null, dc=(ad,v)=>put(ad,(!grp&&gN)?{t:'s',f:'IF(\''+gN+'\'!'+ad+'="","",\''+gN+'\'!'+ad+')',v:String(v||'')}:String(v||''),'docV');   /* V129-114-1：文件管制欄；有集團頁時各廠頁用公式接集團頁 */
+    put('D1','保管單位\nStorage','docL'); dc('E1',ct.keep); put('F1','文件版次','docL'); dc('G1',ct.dver);
+    put('D2','保存年限\nRetention Period','docL'); dc('E2',ct.ret); put('F2','版本日期','docL'); dc('G2',ct.vdate);
     put('A3','盤查單位','infoL'); put('B3',info[0]+(grp?'　'+sites.length+' 廠合計':''),'infoV'); put('D3','填表日期','infoL'); put('E3',today,'infoVc');
     put('A4','','infoL'); put('B4','公司運營控制區域','infoV'); put('D4','盤查期間','infoL'); put('E4',y+'.01.01-'+y+'.12.31'+((typeof trialY==='function'&&trialY(y))?'（試打）':''),'infoVc');
     put('A5','地址','infoL'); put('B5',info[1]||'','infoV'); put('D5','','infoV'); put('E5','','infoVc');
