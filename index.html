@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-113-3</b> · 2026/11/24</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-113-4</b> · 2026/11/24</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -16499,7 +16499,8 @@ window.xpLedger=function(o){
       const eKey=pass?('pass|'+String(r.equipment_name||'')):(fk.replace(/,/g,'')?fk:('nf|'+nmR+'|'+(r.ef_value==null?'':r.ef_value)+'|'+(r.gwp==null?'':r.gwp)));
       const k=[r.site_id,c,cN,eKey,uL,p,b,(isB&&green?nmR:'')].join('¦');
       let x=G[k]; if(!x){ x=G[k]={site:r.site_id,c:c,ln:ln,sc:sc,cN:cN,p:p,b:b,unit:uL,rows:0,q:0,L:0,KG:0,dens:new Set(),pass:pass,sl:gl.map(g=>({fid:g.fid,gas:g.gas,unit:g.unit,gwp:g.gwp,t:0,efs:new Set(),bio:!!g.bio})),src:new Set(),names:new Set(),codes:new Set()}; order.push(k); }
-      x.rows++; if(r.input_method==='C03自動')x.auto=1; x.q+=qL; if(dens){ x.L+=q; x.dens.add(dens); } if(kg)x.KG+=kg; if(nmR)x.names.add(nmR); x.src.add(String(r.ef_source||e['係數出處']||'').trim());
+      x.rows++; if(r.input_method==='C03自動'){ x.auto=1; const rw=String(e['原始用量']||'').match(/^\s*(-?[0-9.]+(?:[eE][+\-]?[0-9]+)?)\s*(\S.*?)\s*$/); if(rw){ x.rawN=(x.rawN||0)+1; x.rq=(x.rq||0)+(+rw[1]); (x.ru||(x.ru=new Set())).add(rw[2]); } }   /* V129-113-4：類別 3 存的是換成係數單位的用量，原始用量另記（例 LPG 250 公斤→454.5 公升） */
+      x.q+=qL; if(dens){ x.L+=q; x.dens.add(dens); } if(kg)x.KG+=kg; if(nmR)x.names.add(nmR); x.src.add(String(r.ef_source||e['係數出處']||'').trim());
       gl.forEach((g,i)=>{ const s=x.sl[i]; if(!s)return; s.t+=g.t; s.efs.add(g.ef==null?'':String(+g.ef)); });
       if(o.nc){ try{ const n=o.nc(r); if(n&&n.c)x.codes.add(n.c); }catch(err){} }
     }));
@@ -16526,7 +16527,13 @@ window.xpLedger=function(o){
       const P3=window.c03Pub||{}, kd=(P3.KINDS&&P3.kindText)?P3.KINDS.find(z=>z.k===P3.kindText([...x.names][0]||'','')):null, cu=P3.unit||(u=>String(u||''));   /* 類別 3 的種類表在 C03 程式自己的範圍裡，經 window.c03Pub 拿 */
       if(kd){ const src=(S.lines||[]).filter(l=>kd.cats.indexOf(l.c)>=0&&(kd.cats[0]!=='B01-01'||(kd.pv?l.b==='位置':l.b==='市電')));
         const sq=src.reduce((a,l)=>a+l.q,0), su=[...new Set(src.map(l=>cu(l.u)))];
-        if(src.length&&su.length===1&&su[0]===cu(x.unit)&&Math.abs(sq-x.q)<=1e-6+Math.abs(x.q)*1e-9)R[9]={t:'n',f:src.map(l=>'J'+l.rn).join('+'),v:+x.q.toFixed(10)};
+        const ref3=src.map(l=>'J'+l.rn).join('+'), near=(a,b)=>Math.abs(a-b)<=1e-6+Math.abs(b)*1e-9;
+        let cv=null;   /* V129-113-4：單位不同（例 LPG 範疇一公斤、類別 3 公升）→ 拿類別 3 的原始用量跟範疇一、二比，對得上就乘換算率 */
+        if(src.length&&su.length===1&&su[0]!==cu(x.unit)&&x.rawN&&x.rawN===x.rows&&x.ru&&x.ru.size===1&&x.rq){ const ru=cu([...x.ru][0]), mm=su[0]===ru?1:(su[0]==='公噸'&&ru==='公斤'?1000:(su[0]==='公斤'&&ru==='公噸'?0.001:null));
+          if(mm!=null&&near(sq*mm,x.rq)){ const k=+(x.q/x.rq).toPrecision(10); if(near(x.rq*k,x.q))cv={mm:mm,k:k,ru:ru}; } }
+        if(src.length&&su.length===1&&su[0]===cu(x.unit)&&near(sq,x.q))R[9]={t:'n',f:ref3,v:+x.q.toFixed(10)};
+        else if(cv){ R[9]={t:'n',f:'('+ref3+')'+(cv.mm!==1?'*'+cv.mm:'')+'*'+cv.k,v:+x.q.toFixed(10)};
+          x.c3why='類別 3 用量換成係數的單位：範疇一、二同種合計 '+(+sq.toFixed(6))+' '+su[0]+(cv.mm!==1?'（＝'+(+x.rq.toFixed(6))+' '+cv.ru+'）':'')+' × '+cv.k+' ＝ '+(+x.q.toFixed(6))+' '+x.unit; }   /* 只是註明換算，不列★重點 */
         else if(x.auto){ x.c3why=src.length?('類別 3 用量 '+(+x.q.toFixed(6))+' '+x.unit+'，範疇一、二同種現在合計 '+(+sq.toFixed(6))+' '+su.join('／')+'，類別 3 可能沒有重算（請到類別 3 頁按「重算並寫入」）'):'範疇一、二沒有同種的列可參照'; C3B.push(sn(x.site)+' '+([...x.names][0]||x.c)+'：'+x.c3why); }
         else x.c3why='這筆類別 3 不是系統自動算的（清冊原始列），用量 '+(+x.q.toFixed(6))+' '+x.unit+(src.length?'，範疇一、二同種合計 '+(+sq.toFixed(6))+' '+su.join('／'):'')+'，照存的數寫'; } }   /* 過去年度收進來的清冊列不報「沒有重算」 */
     R[10]=x.unit||null; R[11]={t:'n',v:1}; R[12]=XP_METH[proc]||null;
