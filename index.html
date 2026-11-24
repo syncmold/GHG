@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-114-2</b> · 2026/11/24</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-115</b> · 2026/11/24</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -2889,7 +2889,7 @@ function tplBook(key,site,year){ const T=TPLS[key]; const st=((typeof SITES!=='u
   const LR=[];   /* 每一份清單在說明頁 B 欄的第幾列到第幾列（下拉選單指到這裡） */
   (typeof T.lists==='function'?T.lists(site,year):(T.lists||[])).forEach(L=>{ info.push([]); info.push([L[0]]); const a=info.length+1; L[1].forEach(x=>info.push(['',x])); LR.push([a,info.length]); });   /* lists 可以是函式：清單要看廠區／年度的（例 金額法的係數類別＝那一年係數庫有的） */
   const sheets=T.sheets.map(sh=>({name:sh.name, n:sh.rows||0, aoa:[sh.cols.map(c=>TPL_TIER[c[1]]||''), sh.cols.map(c=>c[0])],
-      w:sh.cols.map(c=>Math.max(9,Math.min(36,String(c[0]).length*2+3))), f:sh.cols.map((c,i)=>c[4]?[i,c[4]]:null).filter(Boolean),
+      w:sh.cols.map(c=>(c[5]&&c[5].w)||Math.max(9,Math.min(36,String(c[0]).length*2+3))),   /* V129-115：下拉選項比較長的欄可以指定欄寬（c[5].w），選單才看得到整句 */ f:sh.cols.map((c,i)=>c[4]?[i,c[4]]:null).filter(Boolean),
       dv:sh.cols.map((c,i)=>{ const R=c[5]&&LR[c[5].l]; return (R&&R[1]>=R[0])?{c:i,a:R[0],b:R[1],stop:!!c[5].stop}:null; }).filter(Boolean)}));   /* 欄位第 6 格 {l:第幾份清單,stop:1}＝這一欄做成下拉選單 */
   return {name:T.code+'樣板_'+site+'_'+year+'.xlsx', sheets:sheets, info:info}; }
 function tplWorkbook(key,site,year){ const B=tplBook(key,site,year), wb=XLSX.utils.book_new();
@@ -3039,7 +3039,7 @@ function tplTrnLists(cat){ return (site,year)=>{ const X=window.trnXp; if(!X)thr
   const out=[['「交通工具」下拉選單的選項（陸運段用，貨車請照噸數選；前 '+own.length+' 種是本廠所在區域「'+(nm[rg]||rg)+'」的車種'+(cat==='C04'?'；C04 2026 起系統會換成起運國家那一區的同噸級':'')+'）',uniq(own.concat(oth).map(x=>x.veh))]];
   if(cat==='C04')out.push(['「起運國家」「裝貨港國家」「卸貨港國家」下拉選單的選項（國名＋代碼，取自運輸係數表與廠區主檔的國別；陸運：中國＝中國係數、台灣＝台灣係數、其他國家＝全球係數；空運海運看裝貨港國家：台灣＝台灣係數，其他＝全球係數。清單外的國家選「OTH 其他國家」）',X.ogList().items.map(x=>x.c+' '+x.zh)]);   /* V129-104 起運地 */
   else out.push(['「空運係數區域」「海運係數區域」下拉選單的選項（沒填＝系統照廠區帶：台灣廠用台灣、其他廠用全球）',['全球','台灣']]);
-  if(cat==='C09')out.unshift(['「貿易條件」下拉選單的選項（12 種；系統照 ESG 定的運輸規則，把每一段自動分成 C4-2 本廠付運費、或 C9 客戶付運費）',TRNR.TERMS.map(t=>t[0]+' '+t[1])]);   /* V129-104 */
+  if(cat==='C09')out.unshift(['「貿易條件」下拉選單的選項（12 種，｜後面是白話說明；系統照 ESG 定的運輸規則，把每一段自動分成 C4-2 本廠付運費、或 C9 客戶付運費）',TRNR.TERMS.map(t=>TRNR.termLab(t[0]))]);   /* V129-104；V129-115：選項帶白話說明 */
   return out; }; }
 const tplTrnHow=(page,who,extra,i4)=>[
   '1. 一條路線填一列（同一個'+who+'、同一條路線，全年的重量可以合成一列）。第 1 列寫「必填」的一定要填；「擇一必填」＝四個路段的公里數至少填一段。第 1、2 列與分頁名稱請不要改。',
@@ -3055,9 +3055,9 @@ const TPL_TRN_RULE4={need:TPL_TRN_RULE.need,cond:TPL_TRN_RULE.cond.concat([['空
 const TPL_TRN_OG=l=>[['起運國家','R','照單據填這批貨從哪一國出發（下拉選單）；陸運-1 照這一國選車種係數，系統不看公司名稱','CN 中國',null,{l:l,stop:1}],
   ['裝貨港國家','C','有填空運或海運公里數就要選（下拉選單）：台灣＝空運海運用台灣係數，其他國家＝全球係數；只有陸運不用填','CN 中國',null,{l:l,stop:1}],['裝貨港／機場','O','裝貨港或機場名稱（照單據，可空白）','鹽田港'],
   ['卸貨港國家','C','有填空運或海運公里數就要選（下拉選單）：陸運-2 照這一國選車種係數；只有陸運不用填','TW 台灣',null,{l:l,stop:1}],['卸貨港','O','卸貨港或機場名稱（照單據，可空白）','基隆港']];
-TPLS['C09']={code:'C09',name:'下游運輸',lists:tplTrnLists('C09'),how:tplTrnHow('C09 下游運輸','客戶',['6. 「貿易條件」：從下拉選單選 12 種之一。系統照 ESG 定的運輸規則把每一段（陸運-1／海運或空運／陸運-2）自動分成 C4-2（本廠付運費，碳排算進 C04 上游運輸）或 C9（客戶付運費），同一批貨填一列就好；「排放源分類」不用填。FCA、CPT、CIP 有一段要看合約，匯入後在登錄頁點一下選合約內容（存成這個客戶的預設）。沒填貿易條件的列匯入後標「待補」，選好才能儲存。']),
+TPLS['C09']={code:'C09',name:'下游運輸',lists:tplTrnLists('C09'),how:tplTrnHow('C09 下游運輸','客戶',['6. 「貿易條件」：從下拉選單選 12 種之一，每一種｜後面是白話說明（本廠送貨上門選 DDP、客戶自己來提貨選 EXW）。系統照 ESG 定的運輸規則把每一段（陸運-1／海運或空運／陸運-2）自動分成 C4-2（本廠付運費，碳排算進 C04 上游運輸）或 C9（客戶付運費），同一批貨填一列就好；「排放源分類」不用填。FCA、CPT、CIP 有一段要看合約，匯入後在登錄頁點一下選合約內容（存成這個客戶的預設）。沒填貿易條件的列匯入後標「待補」，選好才能儲存。']),
  sheets:[Object.assign({name:'產出3.下游運輸C9',cols:[['序號','O','流水號','1'],['產品類別','S','','樞紐'],['產品名稱','S','','LCD Hinge'],['型號','O','',''],['客戶名稱','R','每一列都要填；沒有名稱的列不會匯入','○○科技'],['出貨國家或地區','S','','美國'],
-   ['出貨總重量(ton)','R','公噸（公斤 ÷ 1000）；含不含包材照貴廠原本的算法','1.25'],['貿易條件','S','下拉選單：12 種貿易條件（系統照這一欄把每一段自動分 C4-2／C9）；空白＝待補，匯入後要選好才能儲存','FOB 船上交貨',null,{l:0,stop:1}],['排放源分類','O','系統照貿易條件自動分，不用填',''],
+   ['出貨總重量(ton)','R','公噸（公斤 ÷ 1000）；含不含包材照貴廠原本的算法','1.25'],['貿易條件','S','下拉選單：12 種貿易條件，每一種｜後面是白話說明（系統照這一欄把每一段自動分 C4-2／C9）；本廠送貨上門選 DDP、客戶自己來提貨選 EXW；空白＝待補，匯入後要選好才能儲存','FOB 船上交貨｜本廠運費付到出口港裝船',null,{l:0,stop:1,w:54}],['排放源分類','O','系統照貿易條件自動分，不用填',''],
    ['起點地址','O','','新北市中和區'],['終點地址','O','','Los Angeles, CA'],['運輸路徑','S','怎麼走的，簡單寫','工廠→基隆港→洛杉磯港→客戶']].concat(TPL_TRN_LEGS(1,2)).concat([['佐證截圖編碼','S','地圖或航程查詢截圖的編號','C9-001'],['備註','O','','']])},TPL_TRN_RULE)]};
 TPLS['C04']={code:'C04',name:'上游運輸',lists:tplTrnLists('C04'),how:tplTrnHow('C04 上游運輸','供應商',['6. 這份樣板只填「進貨」的運輸。系統照集團公司名單自動分：供應商是集團公司＝C4-1A（重量、路線照填，碳排不計：運輸已算在出貨的集團廠）、其他＝C4-1B（計入）；名稱有疑問的送 ESG 歸類。本廠出貨的運輸請到「C09 下游運輸」的樣板填（系統照貿易條件分 C4-2／C9）。',
    '7. 起運地（2026 起每一列都要照單據填）：「起運國家」必填；有空運或海運公里數再填「裝貨港國家」「卸貨港國家」（下拉選單），港口／機場名稱可空白。系統照這些挑係數，不看公司名稱：陸運-1 看起運國家、空運海運看裝貨港國家、陸運-2 看卸貨港國家。「起運國家」每一列必填，有空運或海運公里數的列「裝貨港國家」「卸貨港國家」也必填；沒填的話，匯入時會被擋下並列出哪一列。用舊收集表（沒有這幾欄）或寫了不在清單的國家，匯入後標「待補」，在畫面選好才能儲存。'],
@@ -4066,6 +4066,13 @@ const TRNR_PUNCT=/[\s 　\-‐‑‒–—―－_.,，、。．・·:：;；'"�
 const TRNR={
   TERMS:[['EXW','工廠交貨'],['FCA','貨交運送人'],['FAS','船邊交貨'],['FOB','船上交貨'],['CFR','成本加運費'],['CIF','成本保險加運費'],['CPT','運費付訖'],['CIP','運保費付訖'],['DAP','目的地交貨'],['DPU','卸貨地交貨'],['DDP','完稅後交貨'],['DDU','未完稅交貨']],
   TNOTE:{DDU:'舊名，現叫 DAP'},
+  TALIAS:[['送貨上門','DDP','送货上门'],['客戶自提','EXW','客户自提']],   /* V129-115：收集表的中文寫法對到 12 種的哪一種［比對鍵（繁體）, 代號, 畫面上寫的樣子］。使用者 261124 定「送货上门就是 DDP、客户自提就是 EXW…要系統匯入時自動對過去」；根據＝運輸規則表說明欄 DDP「本廠送到客戶手上」、EXW「客戶到本廠提貨」，2022～2025 三個廠 121 段送货上门有 113 段收集表自己分 C4-2 */
+  aliasKey(t){ return String(t==null?'':t).normalize('NFKC').replace(/[\s\u3000]/g,'').replace(/货/g,'貨').replace(/门/g,'門').replace(/户/g,'戶'); },
+  aliasOf(t){ const k=TRNR.aliasKey(t); const a=k?TRNR.TALIAS.find(x=>x[0]===k):null; return a?a[1]:''; },   /* 整格文字（去空白）完全一樣才算；「送货上门/自提」這種混寫不算，照舊待補 */
+  aliasFor(code){ return TRNR.TALIAS.filter(x=>x[1]===code).map(x=>x[2]); },
+  termTip(c){ let n=''; try{ const R=TRNR.activeRules(); n=(R&&typeof trnrNote4==='function')?trnrNote4(R,c):(TRNR_NOTE4[c]||''); }catch(e){ n=''; }   /* 白話說明＝運輸規則表「說明」欄那一句（ESG 改規則會跟著變）；「付到…」前面補「本廠運費」 */
+    const p=/^付到/.test(n)?'本廠運費'+n:n, al=TRNR.aliasFor(c); return p+(al.length?(p?'；':'')+'寫「'+al.join('」「')+'」也算這一種':''); },
+  termLab(c){ const z=(TRNR.TERMS.find(x=>x[0]===c)||[])[1]||'', tip=TRNR.termTip(c); return c+(z?' '+z:'')+(tip?'｜'+tip:''); },   /* 下拉選項整句：代號 中文名｜白話說明（使用者 261124「在系統上跟匯出樣板上面的貿易條件，要讓選的人看的懂」） */
   SEGS:['陸運-1','海運／空運','陸運-2'],
   SEGSUB:['本廠 → 出口港／機場','出口港 → 目的港','目的港 → 客戶'],
   CTDEF:{'FCA|0':{lab:'依合約交貨地',opt:[['本廠交貨','C9'],['交到貨運站／港口','C4-2']]},'CPT|2':{lab:'依合約目的地',opt:[['寫目的港','C9'],['寫客戶地址','C4-2']]},'CIP|2':{lab:'依合約目的地',opt:[['寫目的港','C9'],['寫客戶地址','C4-2']]}},
@@ -4103,7 +4110,7 @@ const TRNR={
   key(t){ return String(t==null?'':t).normalize('NFKC').replace(TRNR_PUNCT,'').toUpperCase(); },   /* 比對鍵：NFKC → 去空白／連字號／常見標點 → 大寫；不做簡轉繁（簡體寫法要 ESG 確認，不跟繁體併鍵） */
   s2t(t){ return Array.from(String(t==null?'':t)).map(ch=>TRNR_S2T[ch]||ch).join(''); },   /* 簡轉繁：只拿來產生建議 */
   legIdx(leg){ if(leg===0||leg===1||leg===2)return leg; const s=String(leg==null?'':leg).normalize('NFKC').replace(/\s/g,''); if(s==='陸運-1')return 0; if(s==='陸運-2')return 2; if(s==='空運'||s==='海運'||s==='海運/空運'||s==='空運/海運')return 1; return -1; },
-  normTerm(t){ const s=String(t==null?'':t).normalize('NFKC').trim().toUpperCase(); const m=s.match(/^(EXW|FCA|FAS|FOB|CFR|CIF|CPT|CIP|DAP|DPU|DDP|DDU)(?![A-Z])/); return m?m[1]:''; },   /* 收集表寫「FOB 深圳」也認；「客户自提」、空白＝''（待補） */
+  normTerm(t){ const s=String(t==null?'':t).normalize('NFKC').trim().toUpperCase(); const m=s.match(/^(EXW|FCA|FAS|FOB|CFR|CIF|CPT|CIP|DAP|DPU|DDP|DDU)(?![A-Z])/); return m?m[1]:TRNR.aliasOf(t); },   /* 收集表寫「FOB 深圳」也認；V129-115：「送货上门」＝DDP、「客户自提」＝EXW（TALIAS）；其他中文、空白＝''（待補） */
   ruleCell(rules,term,leg){ const t=TRNR.normTerm(term), i=TRNR.legIdx(leg); if(!t||i<0||!rules)return null; const a=rules[t]; const v=Array.isArray(a)?a[i]:null; return (v==='C4-2'||v==='C9'||v==='合約')?v:null; },
   ctInfo(term,leg){ const t=TRNR.normTerm(term), i=TRNR.legIdx(leg); return TRNR.CTDEF[t+'|'+i]||{lab:'依合約',opt:[['合約寫本廠付','C4-2'],['合約寫客戶付','C9']]}; },
   activeRules(){ return (TRNR.V&&TRNR.V.active&&TRNR.V.active.rules)||null; },
@@ -4466,10 +4473,10 @@ function trnrRulesHtml(can){
     h+='<tr><td class="t4"><b>'+t+'</b><span>'+zh+'</span></td>';
     for(let i=0;i<3;i++){ const v=TRNR.ruleCell(src,t,i), a=act?TRNR.ruleCell(act.rules,t,i):null, chg=ed&&act&&v!==a; if(chg)rowChg=true;
       h+='<td class="rc'+(chg?' chg':'')+'"'+(ed?' onclick="trnrCell(&#39;'+t+'&#39;,'+i+')"':'')+' title="'+(chg?'草稿：生效中是 '+facEsc(trnrPlain(a,t,i)):(ed?'點一下改草稿':''))+'">'+trnrBar(v,t,i)+'</td>'; }
-    const nt=trnrNote4(src,t);
+    const al4=TRNR.aliasFor(t); const nt=trnrNote4(src,t)+(al4.length?'（'+al4.join('、')+'）':'');   /* V129-115：收集表的中文寫法註在說明後面（不加「＝」：1280 寬的視窗那一格剛好放得下） */
     h+='<td class="note" title="'+facEsc(nt)+'"><span class="nt">'+(rowChg?'<span class="tg dr">草稿已改</span> ':'')+facEsc(nt)+'</span></td></tr>'; });   /* V129-105-1：包 .nt（見 TRNR_CSS） */
   h+='</tbody></table></div>';
-  h+='<div class="note">申報加總：C4 上游運輸 ＝ <span class="code">C4-1B</span> ＋ <span class="code">C4-2</span>；C9 下游運輸 ＝ 客戶付的段。C4-2 的段存到出貨廠自己的 C04，C9 的段存出貨廠自己的 C09。收集表寫的不是這 12 種（例如「客户自提」或空白）→ 登錄頁標「待補」，請填表的人選一種。</div>';
+  h+='<div class="note">申報加總：C4 上游運輸 ＝ <span class="code">C4-1B</span> ＋ <span class="code">C4-2</span>；C9 下游運輸 ＝ 客戶付的段。C4-2 的段存到出貨廠自己的 C04，C9 的段存出貨廠自己的 C09。收集表寫「送货上门」系統當 DDP、寫「客户自提」當 EXW（原文照樣保留）；其他不是這 12 種的寫法（例如「快遞」或空白）→ 登錄頁標「待補」，請填表的人選一種。</div>';
   return h; }
 window.trnrCell=function(t,i){ const V=TRNR.V; if(!TRNR.can()||!V||!V.draft)return;
   const cur=TRNR.ruleCell(V.draft.rules,t,i), live=V.active?TRNR.ruleCell(V.active.rules,t,i):null;
@@ -10114,15 +10121,15 @@ function trnClsDetail(rt){   /* ▸ 展開區：系統怎麼判斷 */
     return trnBadge(o.cls,o.cls)+(o.man?'<span class="trtg man">人工</span> 原因：'+esc(o.why)+(a?'<div class="fmini">名單判斷：'+esc(a.cls)+'（'+esc(a.why||'')+'）</div>':''):' '+esc(o.why||''))+(o.sugText?' <span class="fmini">'+esc(o.sugText)+'</span>':'')
       +(o.cls==='C4-1A'?'<div class="fmini">C4-1A＝集團公司供應：重量、路線照填，碳排不計（這批貨的運輸已算在出貨的集團廠，照貿易條件歸它的 C4 或 C9）。</div>':'')+(o.cls==='待確認'?'<div class="fmini">ESG 歸類前碳排先照 C4-1B 計入；ESG 在「係數庫 › 對照表 › 運輸規則 › 待歸類」定了以後，這一列要重存（或等 ESG 套用）。</div>':''); }
   const t=TRNR.normTerm(rt.tr); const L=trnLegs(rt).filter(k=>rt.legs[k]&&+rt.legs[k].km>0);
-  let h='<div class="fmini">出貨主體＝本廠（實際出貨的廠區）；客戶是不是集團公司、是不是三角貿易都不影響，只看貿易條件。'+(t?'貿易條件 '+esc(t)+'（'+esc(trnTermZh(t))+'）。':'貿易條件沒填'+(rt.tr?'（寫「'+esc(rt.tr)+'」，不在 12 種裡）':'')+' → 各段「待補」。')+'</div>';
+  let h='<div class="fmini">出貨主體＝本廠（實際出貨的廠區）；客戶是不是集團公司、是不是三角貿易都不影響，只看貿易條件。'+(t?'貿易條件 '+esc(t)+'（'+esc(trnTermZh(t))+'）'+((TRNR.aliasOf(rt.tr)||TRNR.aliasOf(rt.trRaw))?'：收集表寫「'+esc(TRNR.aliasOf(rt.tr)?rt.tr:rt.trRaw)+'」，系統當 '+esc(t):'')+'。':'貿易條件沒填'+(rt.tr?'（寫「'+esc(rt.tr)+'」，不在 12 種裡）':'')+' → 各段「待補」。')+'</div>';
   h+=L.map(k=>{ const o=trnLcOf(rt,k); return '<div>'+esc(k)+'：'+trnBadge(o.cls,o.cls)+(o.man?'<span class="trtg man">人工</span>':'')+((o.srcTok==='合約預設'||o.srcTok==='試打合約')?'<span class="trtg ctg">合約</span>':'')+' '+esc(trnLcTip(rt,k,o))+'</div>'; }).join('');
   return h||'<span class="dash">—</span>'; }
 function trnTermCell(rt,ed,chg){   /* C09 貿易條件：12 種下拉＋空白（待補）；舊的自由文字不在 12 種內＝顯示原文、標待補 */
   const raw=String(rt.tr||''); const t=TRNR.normTerm(raw);
-  if(ed){ const opts='<option value="">待補：選一種</option>'+((raw&&!t)?'<option value="__raw" selected>原文「'+esc(raw)+'」（待補）</option>':'')+TRNR.TERMS.map(([c,z])=>'<option value="'+c+'"'+(c===t?' selected':'')+'>'+c+' '+z+'</option>').join('');
-    return '<td class="edit'+(chg('tr')?' chgd':'')+'"><select data-rid="'+esc(rt.rid)+'" data-f="tr" style="'+(t?'font-weight:700;color:var(--d)':'color:#D42B3A;outline:2px dashed #D42B3A;outline-offset:-2px')+'" title="'+esc(t?t+' '+trnTermZh(t):(raw?'收集表寫「'+raw+'」，不在 12 種裡：請選一種':'貿易條件沒填：請選一種'))+'">'+opts+'</select>'
+  if(ed){ const opts='<option value="">待補：選一種</option>'+((raw&&!t)?'<option value="__raw" selected>原文「'+esc(raw)+'」（待補）</option>':'')+TRNR.TERMS.map(([c,z])=>'<option value="'+c+'"'+(c===t?' selected':'')+'>'+esc(TRNR.termLab(c))+'</option>').join('');   /* V129-115：選項帶白話說明 */
+    return '<td class="edit'+(chg('tr')?' chgd':'')+'"><select data-rid="'+esc(rt.rid)+'" data-f="tr" style="'+(t?'font-weight:700;color:var(--d)':'color:#D42B3A;outline:2px dashed #D42B3A;outline-offset:-2px')+'" title="'+esc(t?TRNR.termLab(t)+(TRNR.aliasOf(raw)?'（收集表寫「'+raw+'」，系統當 '+t+'）':''):(raw?'收集表寫「'+raw+'」，不在 12 種裡：請選一種':'貿易條件沒填：請選一種'))+'">'+opts+'</select>'
       +((raw&&t&&raw!==t)?'<div class="lt" style="text-align:left" title="原文 '+esc(raw)+'">原文 '+esc(raw)+'</div>':'')+((rt.trRaw&&rt.trRaw!==raw)?'<div class="lt" style="text-align:left" title="收集表原文 '+esc(rt.trRaw)+'">收集表 '+esc(rt.trRaw)+'</div>':'')+'</td>'; }
-  return '<td class="tl" title="'+esc(t?t+' '+trnTermZh(t):(raw?'寫「'+raw+'」，不在 12 種裡':'沒填'))+'"><b style="font-family:Consolas,monospace">'+(t?esc(t):'<span style="color:#D42B3A">待補</span>')+'</b>'+(t?'<div class="lv">'+esc(trnTermZh(t))+'</div>':'')+((raw&&raw!==t)?'<div class="lv">原文 '+esc(raw)+'</div>':'')+'</td>'; }
+  return '<td class="tl" title="'+esc(t?TRNR.termLab(t)+(TRNR.aliasOf(raw)?'（收集表寫「'+raw+'」，系統當 '+t+'）':''):(raw?'寫「'+raw+'」，不在 12 種裡':'沒填'))+'"><b style="font-family:Consolas,monospace">'+(t?esc(t):'<span style="color:#D42B3A">待補</span>')+'</b>'+(t?'<div class="lv">'+esc(trnTermZh(t))+'</div>':'')+((raw&&raw!==t)?'<div class="lv">原文 '+esc(raw)+'</div>':'')+'</td>'; }
 function trnRulePill(){   /* 頁首：照第幾版規則／名單判斷（讀不到＝紅字） */
   const V=TRNR.V, A=TRNR.A; let t, ok=true, tip='';
   if(F.cat==='C09'){ if(!V||V._missing){ t='⚠ 運輸規則表還沒建'; ok=false; } else if(V._err){ t='⚠ 運輸規則讀不到'; ok=false; } else if(!V.active){ t='⚠ 沒有生效中的運輸規則'; ok=false; } else { t='照運輸規則第 '+V.active.ver+' 版判斷'; tip='每一段照貿易條件自動分 C4-2／C9；點一下看規則（係數庫 › 對照表 › 運輸規則）'; } }
@@ -11155,12 +11162,13 @@ function trnImpDetect(wb){
   /* 分類：檔案有分開的 C9／C4-2 分頁 → 照分頁名；只有一頁 → 照每列「排放源分類」；C4 收集表 → C4-1 */
   const split=blocks.some(b=>b.shCls==='C4-2')&&blocks.some(b=>b.shCls==='C9');
   const RY=trnRuleY();   /* V129-104：照規則的年度（2026 起）不看檔案的「排放源分類」或分頁名：C09 照貿易條件分段、C04 照集團公司名單 */
-  blocks.forEach(b=>{ let nDis=0, nRc=0, nT=0, nC42=0; b.items.forEach(x=>{ const rc=/C4-?2/i.test(x.rawCls)?'C4-2':(/C9/i.test(x.rawCls)?'C9':(/C4/i.test(x.rawCls)?'C4-1':'')); let cls;
-      if(RY){ cls=''; if(rc||b.shCls)nRc++; if(F.cat==='C04'&&rc==='C4-2')nC42++; if(F.cat==='C09'){ const raw=String(x.tr||'').trim(); const t=TRNR.normTerm(raw); if(raw&&t&&raw!==t)x.trRaw=raw; x.tr=t||raw; if(!t)nT++; } }
+  blocks.forEach(b=>{ let nDis=0, nRc=0, nT=0, nC42=0, nAl=0; b.items.forEach(x=>{ const rc=/C4-?2/i.test(x.rawCls)?'C4-2':(/C9/i.test(x.rawCls)?'C9':(/C4/i.test(x.rawCls)?'C4-1':'')); let cls;
+      if(RY){ cls=''; if(rc||b.shCls)nRc++; if(F.cat==='C04'&&rc==='C4-2')nC42++; if(F.cat==='C09'){ const raw=String(x.tr||'').trim(); const t=TRNR.normTerm(raw); if(raw&&t&&raw!==t&&raw.indexOf(t+' '+trnTermZh(t))!==0)x.trRaw=raw; x.tr=t||raw; if(!t)nT++; if(t&&TRNR.aliasOf(raw))nAl++; } }   /* V129-115：樣板選項整句（代號 中文名｜說明）不用再存成收集表原文；中文寫法對到的列數另外講 */
       else if(F.cat==='C04')cls=rc==='C4-2'?'C4-2':'C4-1'; else if(split&&b.shCls){ cls=b.shCls; if(rc&&rc!==cls)nDis++; } else cls=rc||b.shCls||tcfg().clsDef; x.cls=cls; });
     if(nDis)b.warn.push(nDis+' 列「排放源分類」跟分頁名不一樣，照分頁名算 '+b.shCls);
     if(RY&&F.cat==='C09'&&nRc)b.warn.push('檔案的「排放源分類」欄／分頁名 2026 起不再用來分類：系統照每列的貿易條件把各段自動分 C4-2／C9');
     if(RY&&F.cat==='C09'&&nT)b.warn.push(nT+' 列貿易條件空白或不在 12 種裡＝待補（帶入後在「貿易條件」欄選一種才能儲存）');
+    if(RY&&F.cat==='C09'&&nAl)b.warn.push(nAl+' 列貿易條件寫中文：「送货上门」系統當 DDP、「客户自提」當 EXW，帶入後照運輸規則分段；原文留在貿易條件格下面，不對的可以改選');
     if(RY&&nC42)b.warn.push(nC42+' 列檔案寫 C4-2：2026 起本廠出貨的運輸在「C09 下游運輸」頁照貿易條件分；這裡照供應商名單分 C4-1A／C4-1B');
     if(RY&&F.cat==='C04'){ if(!b.ogCols)b.warn.push('檔案沒有「起運國家」欄：2026 起每條路線要照單據填起運國家（有空運／海運再填裝貨港、卸貨港），帶入後全部「待補」，要在名稱下方的起運地選好才能儲存（系統不用公司名稱猜國別）'); else { const nb=b.items.filter(x=>trnOgBad(trnImpRoute(x)).length).length; if(nb)b.warn.push(nb+' 列起運國家／裝貨港／卸貨港沒填或不在國家清單＝待補（帶入後選好才能儲存）'); } }   /* V129-104 起運地 */
     if(b.noLeg)b.warn.push('略過 '+b.noLeg+' 列沒有任何公里數的'); if(b.zLeg)b.warn.push(b.zLeg+' 段檔案沒算（延噸公里或碳排 0、沒填係數），不帶入');
@@ -15620,7 +15628,7 @@ const GHG_GUIDE={
   start:['<b>匯入</b>：按「⬆ 匯入」，選 ESG 收集表 C4 或 C9；先預覽，<b>按「💾 儲存」才寫入</b>。','<b>逐筆</b>：按「＋ 新增路線」，一條路線一列；常用路線可以從「🛣 本廠用過的路線」直接帶入各段公里數和車種。'],
   fields:[['供應商／產品、路線','起點 → 終點。'],['總重量','這條路線一年運了多少，單位<b>公噸</b>。'],
           ['陸運-1、空運、海運、陸運-2','每一段填公里數，陸運選車種；空運海運：C09 與 2025 以前選國別，C04 2026 起照裝貨港國家自動帶（不用選）；沒有的段空白。'],
-          ['貿易條件（C09）','從 12 種下拉選。系統照 ESG 定的運輸規則把每一段自動分成 C4-2（本廠付，碳排算進 C04）或 C9（客戶付）；同一批貨一列就好，同一條路線不同段可以分到不同類別。依合約的段（FCA 陸運-1、CPT／CIP 陸運-2）點紫框標籤選合約內容，存成這個客戶的預設；真的不照規則時點標籤「人工改」，要寫原因。'],['供應商（C04）','系統照集團公司名單自動分：集團公司＝C4-1A（照填，碳排不計）、其他＝C4-1B（計入）；名稱有疑問的送 ESG 歸類，歸類前先照 C4-1B 算。'],
+          ['貿易條件（C09）','從 12 種下拉選，每一種後面有白話說明；收集表寫「送货上门」系統當 DDP、寫「客户自提」當 EXW。系統照 ESG 定的運輸規則把每一段自動分成 C4-2（本廠付，碳排算進 C04）或 C9（客戶付）；同一批貨一列就好，同一條路線不同段可以分到不同類別。依合約的段（FCA 陸運-1、CPT／CIP 陸運-2）點紫框標籤選合約內容，存成這個客戶的預設；真的不照規則時點標籤「人工改」，要寫原因。'],['供應商（C04）','系統照集團公司名單自動分：集團公司＝C4-1A（照填，碳排不計）、其他＝C4-1B（計入）；名稱有疑問的送 ESG 歸類，歸類前先照 C4-1B 算。'],
           ['起運地（C04，2026 起）','2026 起每筆要照單據填<b>起運國家</b>；有海運或空運再填<b>裝貨港／機場</b>、<b>卸貨港</b>（國家必選，名稱可空白）。系統照這些挑係數，不看公司名稱：陸運-1 看起運國家、空運海運看裝貨港國家（台灣＝台灣係數，其他＝全球係數）、陸運-2 看卸貨港國家。同一供應商上次填的值會先帶出來（黃底），只是預帶，要按「✓ 確認」或改成這一批單據的值才能存（同一供應商可能從不同國家出貨）。'],['灰底欄位不用填','延噸公里、碳排都是系統算的。']],
   err:['重量填成公斤。','各段公里數重複算（陸運-1 已含整段，又在陸運-2 填一次）。','貿易條件沒選或選錯（系統照貿易條件分段，選錯整條路線都會分錯）。','C04 起運國家照公司名稱猜、或直接按確認上次預帶的值（同一供應商可能從不同國家出貨，要看這一批的單據）。']}
  ,'C05':{t:'C05 營運廢棄物',
