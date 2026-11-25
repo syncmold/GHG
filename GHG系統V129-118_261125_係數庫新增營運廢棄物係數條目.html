@@ -5577,6 +5577,7 @@ function facC05AddRead(){ const g=id=>String((document.getElementById(id)||{}).v
   if(vs==='')err.push('值還沒填'); else if(!isFinite(v)||v<0)err.push('值要是 0 以上的數字'); if(!src)err.push('出處必填'); if(/\|/.test(src+why))err.push('出處、選用原因不能有「|」這個符號');
   return {big,way,rg,y,v,src,why,esg,fid,dup,other,err,pick}; }
 function facC05AddLive(){ const R=facC05AddRead(), el=document.getElementById('c5a_prev'), bt=document.getElementById('c5a_go'); if(!el)return;
+  { const m=document.getElementById('c5a_msg'); if(m)m.textContent=''; }   /* 改了任何一格，上一次的錯誤訊息就清掉 */
   const nm=(W5BIG[R.big]||'')+'·'+w5optNm(R.way);
   if(!R.pick){ el.innerHTML='<span style="color:#7a8f84">請先選大類、處理方式·小分類、區域，系統會組出代號並檢查有沒有重複。</span>'; if(bt)bt.disabled=false; return; }
   el.innerHTML='要新增的條目：<b style="font-family:Consolas,monospace">'+facEsc(R.esg)+'</b>　'+facEsc(nm)+'　｜　區域 <b>'+facEsc(FSM_RG[R.rg]||R.rg)+'</b>　｜　年度 <b>'+facEsc(R.y)+'</b>　｜　值 <b>'+(R.v!=null&&isFinite(R.v)?facEsc(String(R.v)):'（還沒填）')+'</b> kgCO₂e／公噸'
@@ -5586,7 +5587,7 @@ function facC05AddLive(){ const R=facC05AddRead(), el=document.getElementById('c
 async function facC05AddGo(){ if(!facC05AddCan())return; const R=facC05AddRead(), msg=t=>{ const m=document.getElementById('c5a_msg'); if(m)m.textContent=t; };
   if(R.err.length){ msg('✗ '+R.err.join('\n✗ ')); return; }
   const nm=(W5BIG[R.big]||'')+'·'+w5optNm(R.way);
-  if(!confirm('確定新增這一條係數條目？\n\n代號：'+R.esg+'　'+nm+'\n區域：'+(FSM_RG[R.rg]||R.rg)+'\n年度：'+R.y+'\n值：'+R.v+' kgCO2e／公噸\n出處：'+R.src+(R.why?'\n選用原因：'+R.why:'')+'\n\n新增後狀態是「待確認」。'))return;
+  if(!confirm('確定新增這一條係數條目？\n\n代號：'+R.esg+'　'+nm+'\n區域：'+(FSM_RG[R.rg]||R.rg)+'\n年度：'+R.y+'\n值：'+R.v+' kgCO2e／公噸\n出處：'+R.src+(R.why?'\n選用原因：'+R.why:'')+'\n\n新增後狀態是「待確認」。')){ msg(''); return; }   /* 按取消就把上一次的錯誤訊息清掉（使用者 261125「小毛病先改」） */
   const bt=document.getElementById('c5a_go'); if(bt)bt.disabled=true; msg('寫入中…');
   try{ const q=await sb.rpc('ghg_factor_add_c05',{p_big:R.big,p_way:R.way,p_rg:R.rg,p_year:R.y,p_value:R.v,p_src:R.src,p_why:R.why||null});
     if(q.error)throw q.error; const fid=(q.data&&q.data.factor_id)||R.fid;

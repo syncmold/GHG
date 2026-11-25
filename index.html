@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-117</b> · 2026/11/25</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-118</b> · 2026/11/25</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -601,7 +601,7 @@ const ghgFetch=async(input,init)=>{
   const m=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
   const url=String(typeof input==='string'?input:((input&&input.url)||input||''));
   const isW=/^(POST|PATCH|PUT|DELETE)$/.test(m)&&url.indexOf(SUPABASE_URL+'/rest/v1/')===0&&url.indexOf('/rest/v1/rpc/')<0;
-  if(m==='POST'&&(url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_verify_')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_site_sort_save')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_recalc_apply')===0)   /* V129-105：係數／匯率存檔後自動重算（批395 ghg_recalc_apply）也要帶登入者憑證；原本兩項不變（使用者 261110「存檔後自動重算」） */){   /* V129-79-1：儲存廠區順序也要帶登入者憑證 */   /* V129-41-3：送查證／退回／定稿／撤銷定稿＝只開放登入的人（批261），要帶登入者自己的憑證 */
+  if(m==='POST'&&(url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_verify_')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_site_sort_save')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_recalc_apply')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_factor_add_c05')===0   /* V129-118：新增係數條目（批416）只准系統管理，要帶登入者憑證 */)   /* V129-105：係數／匯率存檔後自動重算（批395 ghg_recalc_apply）也要帶登入者憑證；原本兩項不變（使用者 261110「存檔後自動重算」） */){   /* V129-79-1：儲存廠區順序也要帶登入者憑證 */   /* V129-41-3：送查證／退回／定稿／撤銷定稿＝只開放登入的人（批261），要帶登入者自己的憑證 */
     const tk=await ghgJwtW();
     if(!tk){ const msg='沒有登入憑證（登入逾時，或這個分頁的登入已失效），這次的送查證／退回／定稿沒有送出——請登出後用工號＋密碼重新登入。';
       ghgWriteWarn(msg); return new Response(JSON.stringify({code:'GHG401',message:msg,details:null,hint:null}),{status:401,headers:{'Content-Type':'application/json'}}); }
@@ -5535,7 +5535,7 @@ function facC05Render(code){
   let h='<div class="ftitle" style="margin-bottom:2px">'+title+'<span class="fmini" style="margin-left:8px">係數（大類 × 處理方式 × 區域 × 年度）·唯讀</span></div>'
     +'<div class="msg" style="background:#fff6dc;border:1px solid #f0cf7a;border-left:6px solid #d99a00;font-size:14px;margin:6px 0 8px;padding:8px 12px;line-height:1.6">🔗 <b style="color:#7a4f00">這一頁是「處理」的係數；清運車的運輸係數不在這裡</b>——C4／C5／C9 共用同一張運輸係數表，在「C04 上游運輸」維護。<br>代號＝C05-〔大類〕〔處理方式〕-〔小分類〕（例 C05-E07-03 汙水廢水·汙水處理（金屬酸洗廢水））。系統查係數先找廠區所在區域的條目，沒有才用 ALL（全區域通用）。2025 以前用的兩段代號（例 C05-E10）列在最右邊「舊代號」欄；已申報年度的資料與數值都沒有改，只是排到新代號這一列一起看。</div>'
     +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:12px 0 4px">一、代號總表（大類 × 處理方式）<span class="fmini" style="font-weight:400;margin-left:8px">'+maxY+' 年係數庫有條目的代號；點代號跳到下面那一列</span></div>'+mx
-    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）</div>'
+    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）'+((typeof facC05AddCan==='function'&&facC05AddCan())?' <button type="button" class="sec" onclick="facC05AddOpen()" title="新增一條營運廢棄物的係數條目（只有系統管理看得到；新條目是「待確認」）" style="margin-left:12px;font-size:12.5px;font-weight:700;padding:2px 12px">＋ 新增係數條目</button>':'')+'</div>'
     +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px;line-height:1.65">一列＝一個代號在一個區域；年度欄是那一年的<b>合成當量</b>（kgCO₂e／公噸；尾數的 0 不顯示，滑鼠停在數字上或展開明細看完整 10 位），空白（—）＝那一年係數庫沒有這一條。點一列（▸）展開明細（各年係數代號、適用廠區、來源），表頭可以「全部展開」。🟡＝跟前一年不同。每一列下面那一行是出處與選用原因（取最後一個年度那一條的備註）。</div>';
   h+='<table class="fsm fsfit" style="width:100%;min-width:'+(108+124+78+(YS.length+1)*96+36)+'px;table-layout:fixed;font-size:12.5px"><colgroup><col style="width:108px"><col style="width:124px"><col style="width:78px">'+YS.map(()=>'<col>').join('')+'<col style="width:80px"></colgroup>'
     +'<thead><tr><th style="text-align:left">代號<a href="javascript:void(0)" class="fsmall" onclick="fsmAll(event)" title="展開或收起每一列的明細" style="font-weight:400;font-size:11px;margin-left:6px;color:inherit;text-decoration:underline">'+(FSM_ALL?'全部收合':'全部展開')+'</a></th><th style="text-align:left">處理方式·小分類</th><th style="text-align:left">區域</th>'
@@ -5543,6 +5543,63 @@ function facC05Render(code){
     +'<th style="text-align:left">舊代號</th></tr></thead><tbody>'+body+'</tbody></table>'
     +'<div style="font-size:11px;color:var(--g);padding:8px 2px">挑係數的規則與資料登錄相同：依年度、廠區所在區域與代號自動判定。排法照「C05 代號與係數總表」定案（261123），年度欄展開（261125）。</div>';
   return h;
+}
+/* ══ V129-118：係數庫新增營運廢棄物係數條目（使用者 261124「可以先做系数库新增的功能，但是先不开放给 ESG 操作」、261125「先做」；第一版只做營運廢棄物）。
+   只有系統管理看得到按鈕；寫入走資料庫功能 ghg_factor_add_c05（批416），資料庫那一層也只准系統管理、同代號同區域同年度不能重複、已申報年度不能加。
+   代號照定案規則由系統組（C05-〔大類〕〔處理方式〕-〔小分類〕），不讓人手打。 ══ */
+function facC05AddCan(){ return !!(typeof curGhgUser!=='undefined'&&curGhgUser&&curGhgUser.role==='admin'); }
+function facC05AddYears(){ const d=declMaxY(), st=new Set([d+1]); (FACALL||[]).forEach(f=>{ const y=+f.factor_year; if(isFinite(y)&&y>d&&y<TRIAL_Y)st.add(y); }); return [...st].sort((a,b)=>a-b); }
+function facC05AddOpen(){ if(!facC05AddCan())return;
+  const RG=['TW','CN','VN','TH','SG','MY','US','ALL'], o=(v,t)=>'<option value="'+facEsc(v)+'">'+facEsc(t)+'</option>';
+  const fld=(lab,inner,w)=>'<div class="fld" style="'+(w?'min-width:'+w+'px;':'')+'text-align:left"><label style="text-align:left">'+lab+'</label>'+inner+'</div>';
+  const h='<div class="row" style="gap:10px;flex-wrap:wrap;text-align:left">'
+    +fld('大類 *','<select id="c5a_big" onchange="facC05AddLive()">'+o('','（請選）')+['A','B','C','D','E','F','Z'].map(b=>o(b,b+' '+(W5BIG[b]||''))).join('')+'</select>',190)
+    +fld('處理方式·小分類 *','<select id="c5a_way" onchange="facC05AddLive()">'+o('','（請選）')+W5OPT.map(x=>o(x[0],x[0]+' '+x[1])).join('')+'</select>',250)
+    +fld('區域 *','<select id="c5a_rg" onchange="facC05AddLive()">'+o('','（請選）')+RG.map(r=>o(r,FSM_RG[r]||r)).join('')+'</select>',150)
+    +fld('年度 *','<select id="c5a_y" onchange="facC05AddLive()">'+facC05AddYears().map(y=>o(y,y)).join('')+'</select>',90)
+    +'</div><div class="row" style="gap:10px;flex-wrap:wrap;margin-top:8px;text-align:left">'
+    +fld('值 *（kgCO₂e／公噸）','<input id="c5a_v" inputmode="decimal" placeholder="例 520.3342" oninput="facC05AddLive()" style="text-align:right">',170)
+    +fld('出處 *（來源表原名稱、第幾列）','<input id="c5a_src" placeholder="例 英國 2024 係數表第 52 列 Commercial and industrial waste·Landfill" oninput="facC05AddLive()" style="width:100%">',460)
+    +'</div><div class="row" style="margin-top:8px;text-align:left">'
+    +fld('選用原因／說明（選填）','<input id="c5a_why" placeholder="例 ESG 網站題 C27 回覆指定" style="width:100%">',640)
+    +'</div><div id="c5a_prev" style="margin-top:10px;padding:8px 10px;border-radius:8px;background:#f6fbf8;border:1px solid #cfe0d6;font-size:13px;line-height:1.6;text-align:left"></div>'
+    +'<div class="fmini" style="margin-top:6px;text-align:left;line-height:1.6">代號由系統照規則組，不用打。新條目的狀態是「待確認」，要在開帳確認頁確認後才能送查證。已申報的年度不能新增。寫入後會留一筆變更紀錄（誰、什麼時候、新增了什麼）。</div>'
+    +'<div id="c5a_msg" style="margin-top:6px;color:#b3261e;font-weight:700;font-size:13px;text-align:left;white-space:pre-wrap"></div>';
+  ghgDlg('＋ 新增係數條目（C05 營運廢棄物）',h,'<button onclick="fuelClose()">取消</button> <button class="pri" id="c5a_go" onclick="facC05AddGo()">新增</button>');
+  setTimeout(facC05AddLive,30); }
+function facC05AddRead(){ const g=id=>String((document.getElementById(id)||{}).value||'').trim();
+  const big=g('c5a_big'), way=g('c5a_way'), rg=g('c5a_rg'), y=+g('c5a_y'), vs=g('c5a_v'), src=g('c5a_src'), why=g('c5a_why');
+  const esg='C05-'+big+way, fid=esg+'-'+rg+'-'+String(y).slice(-2), v=vs===''?null:Number(vs);
+  const pick=!!(big&&way&&rg&&y);   /* 一打開三個下拉都是「請選」，不預先選到已經有條目的組合 */
+  const dup=!pick?null:((FACALL||[]).find(f=>f.category_id==='C05'&&+f.factor_year===y&&String(f.esg_code||'').trim()===esg&&rgOf(f)===rg)||(FACALL||[]).find(f=>f.factor_id===fid));
+  const other=!pick?[]:(FACALL||[]).filter(f=>f.category_id==='C05'&&+f.factor_year===y&&String(f.esg_code||'').trim()===esg&&rgOf(f)!==rg).map(f=>rgOf(f));
+  const err=[]; if(!big||!way||!rg||!y)err.push('大類、處理方式、區域、年度都要選'); if(dup)err.push(esg+' 在 '+rg+' '+y+' 年已經有條目（'+dup.factor_id+'），請到那一列按「修改」');
+  if(vs==='')err.push('值還沒填'); else if(!isFinite(v)||v<0)err.push('值要是 0 以上的數字'); if(!src)err.push('出處必填'); if(/\|/.test(src+why))err.push('出處、選用原因不能有「|」這個符號');
+  return {big,way,rg,y,v,src,why,esg,fid,dup,other,err,pick}; }
+function facC05AddLive(){ const R=facC05AddRead(), el=document.getElementById('c5a_prev'), bt=document.getElementById('c5a_go'); if(!el)return;
+  { const m=document.getElementById('c5a_msg'); if(m)m.textContent=''; }   /* 改了任何一格，上一次的錯誤訊息就清掉 */
+  const nm=(W5BIG[R.big]||'')+'·'+w5optNm(R.way);
+  if(!R.pick){ el.innerHTML='<span style="color:#7a8f84">請先選大類、處理方式·小分類、區域，系統會組出代號並檢查有沒有重複。</span>'; if(bt)bt.disabled=false; return; }
+  el.innerHTML='要新增的條目：<b style="font-family:Consolas,monospace">'+facEsc(R.esg)+'</b>　'+facEsc(nm)+'　｜　區域 <b>'+facEsc(FSM_RG[R.rg]||R.rg)+'</b>　｜　年度 <b>'+facEsc(R.y)+'</b>　｜　值 <b>'+(R.v!=null&&isFinite(R.v)?facEsc(String(R.v)):'（還沒填）')+'</b> kgCO₂e／公噸'
+    +(R.dup?'<div style="color:#b3261e;font-weight:700">✗ 這個代號在這個區域、這一年已經有條目，不能再加一條。</div>':'')
+    +(!R.dup&&R.other.length?'<div style="color:#8a5a00">提醒：同一個代號這一年在別的區域已經有條目（'+facEsc(R.other.join('、'))+'）。系統查係數先找廠區所在區域，沒有才用 ALL。</div>':'');
+  if(bt)bt.disabled=!!R.dup; }
+async function facC05AddGo(){ if(!facC05AddCan())return; const R=facC05AddRead(), msg=t=>{ const m=document.getElementById('c5a_msg'); if(m)m.textContent=t; };
+  if(R.err.length){ msg('✗ '+R.err.join('\n✗ ')); return; }
+  const nm=(W5BIG[R.big]||'')+'·'+w5optNm(R.way);
+  if(!confirm('確定新增這一條係數條目？\n\n代號：'+R.esg+'　'+nm+'\n區域：'+(FSM_RG[R.rg]||R.rg)+'\n年度：'+R.y+'\n值：'+R.v+' kgCO2e／公噸\n出處：'+R.src+(R.why?'\n選用原因：'+R.why:'')+'\n\n新增後狀態是「待確認」。')){ msg(''); return; }   /* 按取消就把上一次的錯誤訊息清掉（使用者 261125「小毛病先改」） */
+  const bt=document.getElementById('c5a_go'); if(bt)bt.disabled=true; msg('寫入中…');
+  try{ const q=await sb.rpc('ghg_factor_add_c05',{p_big:R.big,p_way:R.way,p_rg:R.rg,p_year:R.y,p_value:R.v,p_src:R.src,p_why:R.why||null});
+    if(q.error)throw q.error; const fid=(q.data&&q.data.factor_id)||R.fid;
+    /* 讀回來確認真的寫進去了，再放進畫面 */
+    const a=await sb.from('ghg_emission_factors').select('*').eq('factor_id',fid), g=await sb.from('ghg_emission_factor_gases').select('*').eq('factor_id',fid);
+    if(a.error||!a.data||a.data.length!==1||g.error||!g.data||!g.data.length)throw new Error('資料庫回報已新增，但讀不回來（'+fid+'）；請重新整理頁面確認');
+    if(FACALL&&!FACALL.some(f=>f.factor_id===fid))FACALL.push(a.data[0]); if(typeof FGAS!=='undefined'&&FGAS)FGAS[fid]=g.data;
+    try{ if(typeof W5!=='undefined'&&W5)W5.fac=null; }catch(e){}   /* 登錄頁的處理係數快取，下次進營運廢棄物頁重讀 */
+    try{ if(typeof frevPendAdj==='function')frevPendAdj(R.y,1); }catch(e){}
+    fuelClose(); facPickSrc('C05');
+    setTimeout(()=>{ alert('已新增：'+fid+'（'+nm+'，'+(FSM_RG[R.rg]||R.rg)+'，'+R.y+' 年，'+R.v+' kgCO2e／公噸）。狀態：待確認。'); const e=document.getElementById('fveh_'+R.esg); if(e)e.scrollIntoView({block:'center'}); },300);
+  }catch(e){ if(bt)bt.disabled=false; msg('✗ 沒有新增：'+String((e&&e.message)||e)); }
 }
 function facVehRender(code){
   if(code==='C05'&&typeof facC05Render==='function'){ try{ return facC05Render(code); }catch(e){ console.error('[係數庫] 營運廢棄物新版面畫不出來，退回原本的畫法：',e); } }   /* V129-117 */
