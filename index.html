@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-116</b> · 2026/11/24</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-117</b> · 2026/11/25</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -5452,7 +5452,100 @@ function facTrnRender(code){
   if(hist)h+='<div class="fmini" style="margin-top:8px;color:#7a8f84">另有 '+hist+' 條 2022～2024 歸戶的歷史條目（舊格式，不再維護），可在「範疇類別／全庫搜尋」查。</div>';
   return h+'</div>'; }
 
+/* ══ V129-117：係數庫營運廢棄物頁照定案示意（GHG_C05代號與係數總表_示意_261123-1）重排（使用者 261125「應該要把舊代號用新代號取代才對」
+   「不是要先分類別 再分處理方式」「各年度只是將討論範本加入年度展開」）。只改顯示：2025 以前兩段代號的條目照 W5O2N 歸到新代號那一列，資料庫不動。
+   每個（代號 × 區域）的格子、確認／修改、展開明細都用原本的 facSrcModel／facSrcRender 畫，再把列搬進同一張表。 ══ */
+function facC05Render(code){
+  const all=(FACALL||[]).filter(f=>f.category_id==='C05'&&String(f.esg_code||'').trim());
+  if(!all.length||typeof w5new!=='function')return facVehRenderOld(code);
+  const esg=f=>String(f.esg_code).trim(), isNew=e=>/^C05-[A-Z]\d\d-\d\d$/.test(e);
+  const keyOf=f=>{ const e=esg(f); return isNew(e)?e:(w5new(e)||('OLD:'+e)); };
+  let maxY=2025; all.forEach(f=>{ const y=+f.factor_year; if(isFinite(y)&&y<TRIAL_Y&&y>maxY)maxY=y; });
+  const YS=[]; for(let y=2022;y<=maxY;y++)YS.push(y);
+  const eqOf=f=>{ const gv=(FGAS&&FGAS[f.factor_id])||[]; return gv.length?facEntEq(gv):null; };
+  const note=(f,k)=>{ const m=String((f&&f.notes)||'').match(new RegExp('(?:^|\\|)'+k+':([^|]*)')); return m?m[1].trim():''; };
+  const short=e=>String(e).replace(/^C05-/,'');
+  const oldNm=e=>{ const m=String(e).match(/^C05-([A-Z])(\d\d|Z)$/); if(!m)return ''; return ((typeof W5BIG0!=='undefined'&&W5BIG0[m[1]])||W5BIG[m[1]]||m[1])+'·'+(m[2]==='Z'?'其他':(W5WAY[m[2]]||m[2])); };
+  /* 分組：新代號（或沒有對應的舊代號）→ 條目 */
+  const G={}; all.forEach(f=>{ const k=keyOf(f); (G[k]=G[k]||[]).push(f); });
+  /* 一個新代號底下，併進來的舊代號在同一區域同一年的值不一樣 → 照舊代號分列（一格只能一個值） */
+  const subs=[];   /* {key, big, way, isOld, split(舊代號或''), facs} */
+  Object.keys(G).forEach(k=>{ const fs=G[k], isOld=/^OLD:/.test(k), kk=isOld?k.slice(4):k, big=kk.charAt(4);
+    if(isOld){ subs.push({key:kk,big:big,way:'ZZ'+kk,isOld:true,split:'',facs:fs}); return; }
+    const olds=[...new Set(fs.map(esg).filter(e=>!isNew(e)))].sort();
+    let conflict=false; if(olds.length>1){ const seen={}; fs.forEach(f=>{ const e=esg(f); if(isNew(e))return; const c=rgOf(f)+'|'+f.factor_year, v=eqOf(f); if(v==null)return; (seen[c]=seen[c]||{})[e]=v; });
+      conflict=Object.values(seen).some(o=>{ const vs=Object.values(o); return vs.some(v=>Math.abs(v-vs[0])>1e-9); }); }
+    if(!conflict){ subs.push({key:kk,big:big,way:kk.slice(5),isOld:false,split:'',facs:fs}); return; }
+    /* 新代號的條目跟「最後一年值相同」的那個舊代號放同一列；都不同就跟第一個 */
+    const news=fs.filter(f=>isNew(esg(f))); let main=olds[0];
+    { const nv=news.length?eqOf(news[0]):null; const hit=olds.find(o=>{ const L=fs.filter(f=>esg(f)===o).sort((a,b)=>(+b.factor_year)-(+a.factor_year)); return L.length&&nv!=null&&eqOf(L[0])!=null&&Math.abs(eqOf(L[0])-nv)<1e-9; }); if(hit)main=hit; }
+    olds.forEach((o,i)=>{ subs.push({key:kk,big:big,way:kk.slice(5)+(o===main?'':'~'+o),isOld:false,split:o,main:o===main,facs:fs.filter(f=>esg(f)===o).concat(o===main?news:[])}); });
+  });
+  const BORD=['A','B','C','D','E','F','Z'], bi=b=>{ const i=BORD.indexOf(b); return i<0?98:i; };
+  subs.sort((a,b)=>bi(a.big)-bi(b.big)||((a.isOld?1:0)-(b.isOld?1:0))||a.way.localeCompare(b.way));
+  const sitesOf=f=>{ const nt=String(f.notes||''); const rw=(nt.match(/用在:([^|]*)/)||[])[1]||(nt.match(/廠:([^|;]*)/)||[])[1]||''; const out=[];
+    rw.split(/[、,，\s]+/).forEach(x=>{ x=x.trim(); if(!x)return; if((FAC_SITES||[]).some(z=>z.site_id===x)){ out.push(x); return; } const mc=x.match(/^([A-Z]{2})/); if(mc&&(FAC_SITES||[]).some(z=>z.site_id===mc[1])){ out.push(mc[1]); return; } const mm=x.match(/^(\d{2})/); if(mm&&typeof SITE_LEG2!=='undefined'&&SITE_LEG2[mm[1]])out.push(SITE_LEG2[mm[1]]); });
+    return out; };
+  const NC=3+YS.length+1, td='padding:5px 8px;border-bottom:1px solid #e3ece7;vertical-align:top;text-align:left;white-space:normal;font-size:12px;line-height:1.5';
+  const clamp=x=>x?'<div title="'+facEsc(x)+'" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+facEsc(x)+'</div>':'<span style="color:#9aa">—</span>';   /* 這一列只顯示兩行，全文在展開的明細 */
+  let body='', lastBig=null; const seenId={};
+  subs.forEach(S=>{
+    const ids=new Set(S.facs.map(f=>f.factor_id));
+    const m=facSrcModel(code,f=>ids.has(f.factor_id));
+    /* 年度欄統一成 2022～最後有條目的年度；這一列沒有條目的年度就是空的（不顯示「沿用前一年」的預覽） */
+    m.blocks.forEach(b=>{ if(m.openY!=null){ b.cells[m.openY]={}; b.eq[m.openY]=null; } YS.forEach(y=>{ if(!b.cells[y]){ b.cells[y]={}; b.eq[y]=null; } }); b.gases=b.gases.filter(g=>YS.some(y=>b.cells[y][g]));
+      const st=new Set(); S.facs.filter(f=>rgOf(f)===b.rg).forEach(f=>sitesOf(f).forEach(x=>st.add(x))); b.sites=[...st]; });
+    m.years=YS.slice(); m.openY=null; m.comboReady=true;
+    const subId=S.key+(S.split&&!S.main?'~'+S.split:'');
+    const tpl=document.createElement('template'); tpl.innerHTML=facSrcRender(m,{sub:true,midKey:subId,siteNote:'（條目沒記錄用在哪些廠；實際用到的廠看「年度使用總覽」）',title:''});
+    const tb=tpl.content.querySelector('table.fsm tbody'); if(!tb)return;
+    if(S.big!==lastBig){ lastBig=S.big; body+='<tr class="c5big"><td colspan="'+NC+'" style="text-align:left;background:#dcebe2;font-weight:800;font-size:14px;color:var(--d);padding:6px 10px;border-top:2px solid var(--p)"><span id="fc5big_'+facEsc(S.big)+'">'+facEsc(S.big+' '+(W5BIG[S.big]||''))+(/[DEF]/.test(S.big)?'（專項）':'')+'</span></td></tr>'; }
+    const wayNm=S.isOld?oldNm(S.key).split('·').slice(1).join('·'):w5optNm(S.key.slice(5));
+    let bi2=0, pend='';
+    [...tb.rows].forEach(tr=>{
+      if(tr.classList.contains('fsmh')){ body+=pend; pend=''; const b=m.blocks[bi2++]; const inRg=S.facs.filter(f=>rgOf(f)===b.rg).sort((x,y)=>(+y.factor_year)-(+x.factor_year)); const f0=inRg[0];
+        const olds=[...new Set(inRg.map(esg).filter(e=>!isNew(e)))].sort(); let oldTxt=olds.map(short).join('、'); if(!oldTxt&&f0){ oldTxt=note(f0,'舊代號').split('、').map(short).join('、'); }
+        const td0=tr.cells[0], ar=td0.querySelector('.fsmar');
+        const a=document.createElement('td'); a.style.cssText='text-align:left;font-weight:800;white-space:nowrap'; if(ar)a.appendChild(ar);
+        let anc=''; [S.key].concat(olds).forEach(c=>{ if(!seenId[c]){ seenId[c]=1; anc+='<span id="fveh_'+facEsc(c)+'"></span>'; } });
+        a.insertAdjacentHTML('beforeend',' '+anc+'<span style="font-family:Consolas,monospace;font-size:12.5px;color:'+(S.isOld||(S.split&&!S.main)?'#8a8f8c':'var(--d)')+'">'+facEsc(S.key)+'</span>');
+        const w=document.createElement('td'); w.style.cssText='text-align:left;white-space:normal;font-weight:600;line-height:1.4';
+        w.innerHTML=facEsc(wayNm)+(S.isOld?'<div style="font-size:11px;font-weight:400;color:#a05a00">2025 以前的代號；2026 起沒有這一條</div>':'')+((S.split&&!S.main)?'<div style="font-size:11px;font-weight:400;color:#a05a00">2025 以前「'+facEsc(oldNm(S.split))+'」的值；跟上一列不同，分開列</div>':'');
+        tr.insertBefore(a,td0); tr.insertBefore(w,td0); td0.style.fontWeight='600'; td0.style.whiteSpace='normal';
+        { const us=[...td0.querySelectorAll('span')].find(x=>/^合成當量/.test(x.textContent.trim())); if(us)us.remove(); }   /* 單位寫在表上方的說明，不每列重複 */
+        YS.forEach((y,i)=>{ const c=tr.cells[3+i]; if(!c)return; const tn=[...c.childNodes].find(n=>n.nodeType===3&&/\d/.test(n.nodeValue)); if(tn){ c.title=y+'：'+tn.nodeValue.trim()+' kgCO₂e／公噸'; tn.nodeValue=tn.nodeValue.replace(/(\.\d*?[1-9])0+(\s*)$/,'$1$2').replace(/\.0+(\s*)$/,'$1'); } });   /* 這一列的值不顯示尾數的 0（照定案示意的寫法）；完整 10 位在滑鼠提示與展開的明細 */
+        if(!S.split&&olds.length>1)tr.querySelectorAll('span').forEach(sp=>{ const mt=sp.textContent.trim().match(/^⚠ (\d+) 筆$/); if(mt){ sp.textContent='併 '+mt[1]+' 條·同值'; sp.style.color='#7a8f84'; sp.title='這一格是 '+mt[1]+' 個舊代號的條目併在一起看，值相同（點開這一列看各條的係數代號）'; } });   /* 同值併列不是要清的重複條目，不用警示的寫法 */
+        tr.dataset.c5=[S.key].concat(olds).join('|');
+        const src=f0?(note(f0,'主值出處')||f0.factor_source||''):'', why=f0?note(f0,'選用原因'):'';
+        pend=(src||why)?'<tr class="c5src"><td colspan="'+NC+'" style="text-align:left;white-space:normal;font-size:11.5px;line-height:1.55;color:#4a5f55;padding:2px 10px 7px 26px;border-bottom:1px solid #cfe0d6">'+(src?'<b>出處</b>：'+facEsc(src):'')+(src&&why?'<br>':'')+(why?'<span style="color:#8a5a00"><b>選用原因</b>：'+facEsc(why)+'</span>':'')+'</td></tr>':'';   /* 使用者 261125「沒有滑移的功能，看不到全部內容」：年度展開後放不下出處、選用原因兩欄（表格區只有約 940 寬），改成每一列下面一行、全文直接看得到，不用左右捲 */
+        tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace">'+(oldTxt?facEsc(oldTxt):'<span style="color:#9aa">—</span>')+'</td>');
+      } else { const c0=tr.cells[0]; if(c0)c0.colSpan=3; [...tr.cells].forEach(c=>{ c.style.whiteSpace='normal'; c.style.wordBreak='break-all'; }); tr.querySelectorAll('span').forEach(x=>{ if(x.style.whiteSpace==='nowrap')x.style.whiteSpace='normal'; });   /* 年度欄比原本窄，明細裡的代號與 10 位數字要能換行，不然會疊在一起 */ tr.insertAdjacentHTML('beforeend','<td></td>'); }
+      body+=tr.outerHTML; });
+    body+=pend;
+  });
+  /* 一、代號總表（大類 × 處理方式）：只列最後一個年度係數庫真的有條目的代號 */
+  const WAYS=[['01','燃燒'],['03','掩埋'],['04','回收'],['05','熱處理'],['06','物理處理'],['07','汙水處理'],['99','其他']];
+  const nowKeys=[...new Set(all.filter(f=>+f.factor_year===maxY&&isNew(esg(f))).map(esg))].sort();
+  const th='padding:5px 8px;background:var(--p);color:#fff;font-size:12px;text-align:left', c1='padding:5px 8px;border:1px solid #d5e3db;vertical-align:top;font-size:12px;line-height:1.6;text-align:left';   /* 使用者 261125：文字統一靠左、數字靠右 */
+  let mx='<table style="width:100%;border-collapse:collapse;table-layout:auto;margin:4px 0 10px"><thead><tr><th style="'+th+';width:150px">大類</th>'+WAYS.map(w=>'<th style="'+th+'">'+w[0]+' '+w[1]+'</th>').join('')+'</tr></thead><tbody>';
+  BORD.forEach(b=>{ mx+='<tr><td style="'+c1+';font-weight:800;background:#eef5f1"><a href="javascript:void(0)" onclick="var e=document.getElementById(&#39;fc5big_'+b+'&#39;);if(e)e.scrollIntoView({block:&#39;center&#39;})" style="color:var(--d)">'+facEsc(b+' '+(W5BIG[b]||''))+'</a></td>'
+      +WAYS.map(w=>{ const ks=nowKeys.filter(k=>k.charAt(4)===b&&k.slice(5,7)===w[0]); return '<td style="'+c1+'">'+ks.map(k=>{ const sub=w5optNm(k.slice(5)); const m2=sub.match(/（(.*)）$/); return '<a href="javascript:void(0)" onclick="var e=document.getElementById(&#39;fveh_'+k+'&#39;);if(e)e.scrollIntoView({block:&#39;center&#39;})" style="white-space:nowrap;color:var(--p)"><b style="font-family:Consolas,monospace">'+facEsc(short(k))+'</b></a> <span style="color:#5d6f66">'+facEsc(m2?m2[1]:'一般')+'</span>'; }).join('<br>')+'</td>'; }).join('')+'</tr>'; });
+  mx+='</tbody></table>';
+  const r=ncRow(code), title=r?ncLabel(code,null):facEsc(code), mAll={facs:all};
+  let h='<div class="ftitle" style="margin-bottom:2px">'+title+'<span class="fmini" style="margin-left:8px">係數（大類 × 處理方式 × 區域 × 年度）·唯讀</span></div>'
+    +'<div class="msg" style="background:#fff6dc;border:1px solid #f0cf7a;border-left:6px solid #d99a00;font-size:14px;margin:6px 0 8px;padding:8px 12px;line-height:1.6">🔗 <b style="color:#7a4f00">這一頁是「處理」的係數；清運車的運輸係數不在這裡</b>——C4／C5／C9 共用同一張運輸係數表，在「C04 上游運輸」維護。<br>代號＝C05-〔大類〕〔處理方式〕-〔小分類〕（例 C05-E07-03 汙水廢水·汙水處理（金屬酸洗廢水））。系統查係數先找廠區所在區域的條目，沒有才用 ALL（全區域通用）。2025 以前用的兩段代號（例 C05-E10）列在最右邊「舊代號」欄；已申報年度的資料與數值都沒有改，只是排到新代號這一列一起看。</div>'
+    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:12px 0 4px">一、代號總表（大類 × 處理方式）<span class="fmini" style="font-weight:400;margin-left:8px">'+maxY+' 年係數庫有條目的代號；點代號跳到下面那一列</span></div>'+mx
+    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）</div>'
+    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px;line-height:1.65">一列＝一個代號在一個區域；年度欄是那一年的<b>合成當量</b>（kgCO₂e／公噸；尾數的 0 不顯示，滑鼠停在數字上或展開明細看完整 10 位），空白（—）＝那一年係數庫沒有這一條。點一列（▸）展開明細（各年係數代號、適用廠區、來源），表頭可以「全部展開」。🟡＝跟前一年不同。每一列下面那一行是出處與選用原因（取最後一個年度那一條的備註）。</div>';
+  h+='<table class="fsm fsfit" style="width:100%;min-width:'+(108+124+78+(YS.length+1)*96+36)+'px;table-layout:fixed;font-size:12.5px"><colgroup><col style="width:108px"><col style="width:124px"><col style="width:78px">'+YS.map(()=>'<col>').join('')+'<col style="width:80px"></colgroup>'
+    +'<thead><tr><th style="text-align:left">代號<a href="javascript:void(0)" class="fsmall" onclick="fsmAll(event)" title="展開或收起每一列的明細" style="font-weight:400;font-size:11px;margin-left:6px;color:inherit;text-decoration:underline">'+(FSM_ALL?'全部收合':'全部展開')+'</a></th><th style="text-align:left">處理方式·小分類</th><th style="text-align:left">區域</th>'
+    +YS.map(y=>'<th style="text-align:right">'+y+((typeof frevHdr==='function')?frevHdr(mAll,y):'')+'</th>').join('')
+    +'<th style="text-align:left">舊代號</th></tr></thead><tbody>'+body+'</tbody></table>'
+    +'<div style="font-size:11px;color:var(--g);padding:8px 2px">挑係數的規則與資料登錄相同：依年度、廠區所在區域與代號自動判定。排法照「C05 代號與係數總表」定案（261123），年度欄展開（261125）。</div>';
+  return h;
+}
 function facVehRender(code){
+  if(code==='C05'&&typeof facC05Render==='function'){ try{ return facC05Render(code); }catch(e){ console.error('[係數庫] 營運廢棄物新版面畫不出來，退回原本的畫法：',e); } }   /* V129-117 */
   /* V129-86：C04／C09 比照 C07（代號一塊、區域分列、年度當欄）；V129-71 統一車種對照表收在最下面（facVehRenderOld 裡） */
   return facVehRenderOld(code); }
 /* V129-87：台灣高鐵站間碳足跡（每人單程 kg）——商務旅行與員工通勤共用；資料庫 ghg_thsr_cf，讀不到用內建 114 年版 */
@@ -5809,7 +5902,7 @@ function facTraceHL(){   // 依 FAC_TRACE 在矩陣上標亮：找年度欄、�
   const tb=(FSM_ITEM[t.cat]&&/^(vehicle|mid)$/.test(FSM_ITEM[t.cat].kind)&&t.kc&&pane.querySelector('#fveh_'+t.kc+' table.fsm'))||pane.querySelector('table.fsm'); if(!tb)return;   /* V103-7 */
   const ths=[...tb.querySelectorAll('thead th')]; const idx=ths.findIndex(th=>th.textContent.trim().indexOf(t.y)===0); if(idx<0)return;
   let cur=null, first=null;
-  [...tb.querySelectorAll('tbody tr')].forEach(tr=>{ const td0=tr.cells[0]; const txt=td0?td0.textContent.trim():''; if(tr.classList.contains('fsmh')){cur=tr.dataset.rg; if(cur===t.rg)FSM_OPEN.add(tr.dataset.k);}   /* V119-7：追溯到的地區自動展開 */ else if(txt.indexOf('▾')===0){cur=txt.slice(1).trim().split(/[\s　]/)[0];} if(cur===t.rg&&tr.cells.length===ths.length){const td=tr.cells[idx]; if(td){td.classList.add('trhl'); if(!first)first=td;}} });
+  [...tb.querySelectorAll('tbody tr')].forEach(tr=>{ const td0=tr.cells[0]; const txt=td0?td0.textContent.trim():''; if(tr.classList.contains('fsmh')){cur=(tr.dataset.c5&&t.kc&&('|'+tr.dataset.c5+'|').indexOf('|'+t.kc+'|')<0)?null:tr.dataset.rg;   /* V129-117：營運廢棄物一張表多個代號，只認追溯的那個代號 */ if(cur===t.rg)FSM_OPEN.add(tr.dataset.k);}   /* V119-7：追溯到的地區自動展開 */ else if(txt.indexOf('▾')===0){cur=txt.slice(1).trim().split(/[\s　]/)[0];} if(cur===t.rg&&tr.cells.length===ths.length){const td=tr.cells[idx]; if(td){td.classList.add('trhl'); if(!first)first=td;}} });
   const old=pane.querySelector('.trbanner'); if(old)old.remove();
   const b=document.createElement('div'); b.className='msg trbanner'; b.style.cssText='background:#fff3cd;font-size:12px;margin:0 0 6px';
   b.innerHTML='🔗 追溯：'+facEsc(t.site?(t.site+'　'):'')+facEsc(t.y)+' 年這筆用的是 <b>'+facEsc(t.rg)+' '+facEsc(t.y)+'</b> 這一欄（標亮）。　<a href="javascript:void(0)" onclick="FAC_TRACE=null;facPickSrc(FAC_CUR)" style="color:var(--p)">清除標亮</a>';
