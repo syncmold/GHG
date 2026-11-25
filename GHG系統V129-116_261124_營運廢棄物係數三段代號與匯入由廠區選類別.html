@@ -3131,7 +3131,7 @@ const tplRlHow=(page,per,kinds)=>[
   '4. '+kinds,
   '5. 填好回系統「資料登錄 › '+page+'」，選好跟樣板一樣的廠區與年度，按「📥 匯入收集表」選這個檔。會先預覽，按確認才寫入。',
   '6. 匯入會取代這個廠這一年原本用匯入或登錄頁輸入的資料，所以請把整年的項目放在同一個檔。'];
-TPLS['C08']={code:'C08',name:'上游租賃（承租）',how:tplRlHow('C08 上游租賃','承租','系統照「資產」的名稱歸類：名稱裡有「大巴／巴士／交通車／班車／租賃車／公務車」＝車輛租賃（租大巴、商務車同一個係數；2026-11-24 起承租大巴併入車輛租賃）；其他＝不動產租賃（辦公室、廠房、倉庫、宿舍、停車位）。影印機、飲水機這類設備租賃 2026 年起歸 C01-02 服務，請不要填在這裡。'),
+TPLS['C08']={code:'C08',name:'上游租賃（承租）',how:tplRlHow('C08 上游租賃','承租','系統照「資產」的名稱歸類：名稱裡有「大巴／巴士／交通車／班車／租賃車／公務車」＝車輛租賃（租大巴、商務車同一個係數；2026-11-24 起承租大巴併入車輛租賃）；名稱裡有「辦公室／廠房／倉庫／宿舍／停車位／土地／場地」這類字＝不動產租賃；名稱看不出是哪一種的，系統不會自己歸到不動產，匯入預覽會請您逐列選類別，選完才能匯入。影印機、飲水機這類設備租賃 2026 年起歸 C01-02 服務，請不要填在這裡。'),
  lists:[['「資產」名稱怎麼寫、系統歸到哪一類',['辦公室／廠房／倉庫／宿舍／停車位 → 不動產租賃','租賃車／公務車／大巴／巴士／交通車／班車 → 車輛租賃']]],sheets:[tplRlSheet('承租')]};
 TPLS['C13']={code:'C13',name:'下游租賃（出租）',how:tplRlHow('C13 下游租賃','出租','本廠出租給別人的資產（廠房、辦公室、倉庫、宿舍、土地、停車位）都算不動產出租，用租金收入算。'),sheets:[tplRlSheet('出租')]};
 /* ── V129-41-1：C15 投資相關（使用者 261019「按你建議」）——一列＝一筆投資；種類、幣別用下拉；系統樣板匯入另有讀法（rlScanC15Tpl） ── */
@@ -11705,7 +11705,7 @@ function wstRender(){
     x:'<span class="fmini"></span>'
       +((typeof trialY==='function'&&trialY(W5.year))?trialChip():'')+((typeof facPendChip==='function')?facPendChip(W5.year):''),
     btns:tplBtn('C05',W5.site,W5.year)+(ed?'<button onclick="wstAdd()">＋ 新增清運</button> <button class="sec" onclick="wstImportPick()" title="上傳 ESG 的 C5 營運廢棄物收集表，先預覽、確認才寫入">📥 匯入收集表</button> <button class="pri" onclick="wstSave()">💾 儲存</button>':'')});
-  h+='<div class="fmini ehdesc" style="margin:0 2px 4px;line-height:1.4">碳排＝處理排放＋運輸排放；係數 '+w5esc(rg)+' '+fy+' 年版　<span title="一列＝一筆清運。處理排放＝重量 × 處理係數（依「廢棄物種類 × 處理方式 × 區域 × 年度」從係數庫自動帶，代號 C05-＜大類＞＜處理方式＞）；運輸排放＝延噸公里 × 運輸係數。" style="cursor:help;color:var(--p);font-weight:700;white-space:nowrap">ⓘ 怎麼算</span></div>';   /* V106-1：說明收成一行 */
+  h+='<div class="fmini ehdesc" style="margin:0 2px 4px;line-height:1.4">碳排＝處理排放＋運輸排放；係數 '+w5esc(rg)+' '+fy+' 年版　<span title="一列＝一筆清運。處理排放＝重量 × 處理係數（依「廢棄物種類 × 處理方式 × 區域 × 年度」從係數庫自動帶，代號 C05-＜大類＞＜處理方式＞-＜小分類＞；2025 以前是兩段 C05-＜大類＞＜處理方式＞）；運輸排放＝延噸公里 × 運輸係數。" style="cursor:help;color:var(--p);font-weight:700;white-space:nowrap">ⓘ 怎麼算</span></div>';   /* V106-1：說明收成一行 */
   h+='<div id="s101wrap">';        /* ★樣式（字級／表格／表頭凍結／灰底）全掛在 #s101wrap 底下，不包會變成預設 16px */
   h+=entryNoteHTML(W5.note);   /* V129-16 */
   h+=w5declPanel();
