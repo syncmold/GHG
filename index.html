@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-119</b> · 2026/11/25</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-120</b> · 2026/11/26</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -3698,7 +3698,7 @@ function facGasNote(g){   /* V103-14：TTW＝下游、WTT＝上游 的白話說�
 var FSM_OPEN=new Set(), FSM_ALL=false;
 function fsmApply(tb){
   tb.querySelectorAll('tr.fsmh').forEach(h=>{ const op=FSM_ALL||FSM_OPEN.has(h.dataset.k); const a=h.querySelector('.fsmar'); if(a)a.textContent=op?'▾':'▸';
-    for(let x=h.nextElementSibling;x&&x.classList.contains('fsmd');x=x.nextElementSibling)x.classList.toggle('on',op); });
+    { let x=h.nextElementSibling; for(;x&&x.classList.contains('fsmd');x=x.nextElementSibling)x.classList.toggle('on',op); if(x&&x.classList.contains('c5src'))x.style.display=(window.FC5SRC||op)?'':'none'; } });   /* V129-120：營運廢棄物「出處／選用原因」那一行跟著這一列展開 */
   const l=tb.querySelector('.fsmall'); if(l)l.textContent=FSM_ALL?'全部收合':'全部展開';
 }
 function fsmTog(h){
@@ -3707,6 +3707,12 @@ function fsmTog(h){
   if(FSM_OPEN.has(k))FSM_OPEN.delete(k); else FSM_OPEN.add(k);
   document.querySelectorAll('table.fsm').forEach(fsmApply);
 }
+/* V129-120：係數庫營運廢棄物頁「出處／選用原因」那一行的顯示切換（預設摺起；這一頁記住） */
+window.FC5SRC=false;
+function fc5SrcTog(ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); } window.FC5SRC=!window.FC5SRC;
+  document.querySelectorAll('tr.c5src').forEach(r=>{ r.style.display=window.FC5SRC?'':'none'; }); document.querySelectorAll('table.fsm').forEach(fsmApply);
+  document.querySelectorAll('.fc5srcT').forEach(a=>{ a.textContent=window.FC5SRC?'出處·選用原因：摺起':'出處·選用原因：顯示'; }); }
+window.fc5SrcTog=fc5SrcTog;
 function fsmAll(ev){ if(ev)ev.stopPropagation(); FSM_ALL=!FSM_ALL; if(!FSM_ALL)FSM_OPEN.clear(); document.querySelectorAll('table.fsm').forEach(fsmApply); }
 /* V129-97：係數庫中分類標題後面加「（適用：…）」（使用者 261103「C06-R02 高鐵／長途鐵路 我希望後面( ) 加上適用什麼」）；只改係數庫畫面，資料庫名稱不動。
    C06-R02 適用範圍＝決策紀錄 261102「高鐵按地區分」：起訖站不是台灣高鐵 12 站＝長途鐵路；台灣高鐵用站對站碳足跡表 */
@@ -5517,7 +5523,7 @@ function facC05Render(code){
         if(!S.split&&olds.length>1)tr.querySelectorAll('span').forEach(sp=>{ const mt=sp.textContent.trim().match(/^⚠ (\d+) 筆$/); if(mt){ sp.textContent='併 '+mt[1]+' 條·同值'; sp.style.color='#7a8f84'; sp.title='這一格是 '+mt[1]+' 個舊代號的條目併在一起看，值相同（點開這一列看各條的係數代號）'; } });   /* 同值併列不是要清的重複條目，不用警示的寫法 */
         tr.dataset.c5=[S.key].concat(olds).join('|');
         const src=f0?(note(f0,'主值出處')||f0.factor_source||''):'', why=f0?note(f0,'選用原因'):'';
-        pend=(src||why)?'<tr class="c5src"><td colspan="'+NC+'" style="text-align:left;white-space:normal;font-size:11.5px;line-height:1.55;color:#4a5f55;padding:2px 10px 7px 26px;border-bottom:1px solid #cfe0d6">'+(src?'<b>出處</b>：'+facEsc(src):'')+(src&&why?'<br>':'')+(why?'<span style="color:#8a5a00"><b>選用原因</b>：'+facEsc(why)+'</span>':'')+'</td></tr>':'';   /* 使用者 261125「沒有滑移的功能，看不到全部內容」：年度展開後放不下出處、選用原因兩欄（表格區只有約 940 寬），改成每一列下面一行、全文直接看得到，不用左右捲 */
+        pend=(src||why)?'<tr class="c5src"'+(window.FC5SRC?'':' style="display:none"')+'><td colspan="'+NC+'" style="text-align:left;white-space:normal;font-size:11.5px;line-height:1.55;color:#4a5f55;padding:2px 10px 7px 26px;border-bottom:1px solid #cfe0d6">'+(src?'<b>出處</b>：'+facEsc(src):'')+(src&&why?'<br>':'')+(why?'<span style="color:#8a5a00"><b>選用原因</b>：'+facEsc(why)+'</span>':'')+'</td></tr>':'';   /* 使用者 261125「沒有滑移的功能，看不到全部內容」：年度展開後放不下出處、選用原因兩欄（表格區只有約 940 寬），改成每一列下面一行、全文直接看得到，不用左右捲 */
         tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace">'+(oldTxt?facEsc(oldTxt):'<span style="color:#9aa">—</span>')+'</td>');
       } else { const c0=tr.cells[0]; if(c0)c0.colSpan=3; [...tr.cells].forEach(c=>{ c.style.whiteSpace='normal'; c.style.wordBreak='break-all'; }); tr.querySelectorAll('span').forEach(x=>{ if(x.style.whiteSpace==='nowrap')x.style.whiteSpace='normal'; });   /* 年度欄比原本窄，明細裡的代號與 10 位數字要能換行，不然會疊在一起 */ tr.insertAdjacentHTML('beforeend','<td></td>'); }
       body+=tr.outerHTML; });
@@ -5535,8 +5541,8 @@ function facC05Render(code){
   let h='<div class="ftitle" style="margin-bottom:2px">'+title+'<span class="fmini" style="margin-left:8px">係數（大類 × 處理方式 × 區域 × 年度）·唯讀</span></div>'
     +'<div class="msg" style="background:#fff6dc;border:1px solid #f0cf7a;border-left:6px solid #d99a00;font-size:14px;margin:6px 0 8px;padding:8px 12px;line-height:1.6">🔗 <b style="color:#7a4f00">這一頁是「處理」的係數；清運車的運輸係數不在這裡</b>——C4／C5／C9 共用同一張運輸係數表，在「C04 上游運輸」維護。<br>代號＝C05-〔大類〕〔處理方式〕-〔小分類〕（例 C05-E07-03 汙水廢水·汙水處理（金屬酸洗廢水））。系統查係數先找廠區所在區域的條目，沒有才用 ALL（全區域通用）。2025 以前用的兩段代號（例 C05-E10）列在最右邊「舊代號」欄；已申報年度的資料與數值都沒有改，只是排到新代號這一列一起看。</div>'
     +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:12px 0 4px">一、代號總表（大類 × 處理方式）<span class="fmini" style="font-weight:400;margin-left:8px">'+maxY+' 年係數庫有條目的代號；點代號跳到下面那一列</span></div>'+mx
-    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）'+((typeof facC05AddCan==='function'&&facC05AddCan())?' <button type="button" class="sec" onclick="facC05AddOpen()" title="新增一條營運廢棄物的係數條目（只有系統管理看得到；新條目是「待確認」）" style="margin-left:12px;font-size:12.5px;font-weight:700;padding:2px 12px">＋ 新增係數條目</button>':'')+'</div>'
-    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px;line-height:1.65">一列＝一個代號在一個區域；年度欄是那一年的<b>合成當量</b>（kgCO₂e／公噸；尾數的 0 不顯示，滑鼠停在數字上或展開明細看完整 10 位），空白（—）＝那一年係數庫沒有這一條。點一列（▸）展開明細（各年係數代號、適用廠區、來源），表頭可以「全部展開」。🟡＝跟前一年不同。每一列下面那一行是出處與選用原因（取最後一個年度那一條的備註）。</div>';
+    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）'+' <button type="button" class="sec fc5srcT" onclick="fc5SrcTog(event)" title="每一列下面那一行出處與選用原因：全部顯示或摺起（點一列 ▸ 展開時，那一列的也會一起打開）" style="font-size:12px;padding:3px 10px;margin-left:6px">'+(window.FC5SRC?'出處·選用原因：摺起':'出處·選用原因：顯示')+'</button>'+((typeof facC05AddCan==='function'&&facC05AddCan())?' <button type="button" class="sec" onclick="facC05AddOpen()" title="新增一條營運廢棄物的係數條目（只有系統管理看得到；新條目是「待確認」）" style="margin-left:12px;font-size:12.5px;font-weight:700;padding:2px 12px">＋ 新增係數條目</button>':'')+'</div>'
+    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px;line-height:1.65">一列＝一個代號在一個區域；年度欄是那一年的<b>合成當量</b>（kgCO₂e／公噸；尾數的 0 不顯示，滑鼠停在數字上或展開明細看完整 10 位），空白（—）＝那一年係數庫沒有這一條。點一列（▸）展開明細（各年係數代號、適用廠區、來源），表頭可以「全部展開」。🟡＝跟前一年不同。每一列的出處與選用原因（取最後一個年度那一條的備註）預設摺起；點一列（▸）展開時會一起打開，標題旁「出處·選用原因：顯示」按鈕可以全部打開。</div>';
   h+='<table class="fsm fsfit" style="width:100%;min-width:'+(108+124+78+(YS.length+1)*96+36)+'px;table-layout:fixed;font-size:12.5px"><colgroup><col style="width:108px"><col style="width:124px"><col style="width:78px">'+YS.map(()=>'<col>').join('')+'<col style="width:80px"></colgroup>'
     +'<thead><tr><th style="text-align:left">代號<a href="javascript:void(0)" class="fsmall" onclick="fsmAll(event)" title="展開或收起每一列的明細" style="font-weight:400;font-size:11px;margin-left:6px;color:inherit;text-decoration:underline">'+(FSM_ALL?'全部收合':'全部展開')+'</a></th><th style="text-align:left">處理方式·小分類</th><th style="text-align:left">區域</th>'
     +YS.map(y=>'<th style="text-align:right">'+y+((typeof frevHdr==='function')?frevHdr(mAll,y):'')+'</th>').join('')
@@ -13236,7 +13242,7 @@ async function impDel(ids){ let n=0;
     if(error)return {ok:false,n:n,err:error.message}; n+=(data||[]).length; }
   return n===ids.length?{ok:true,n:n}:{ok:false,n:n,err:'只刪到 '+n+'／'+ids.length+' 筆（可能沒有權限、年度已鎖住或登入逾時）'}; }
 /* V129-119：匯入讀到 0 列——原本照樣走 impSwap：什麼都沒寫、卻把這個廠年原本的登錄頁／匯入列刪掉。現在預覽停用「確認匯入」，impSwap 自己也擋一次。 */
-const IMP_ZERO_TXT='這個檔案讀到 0 列可以匯入，所以不能匯入；原本的資料不會動。請確認檔案裡有填資料、選的廠區和年度對不對。如果是要把這一頁的資料清空，請用頁面上方的「🗑 清空本頁」。';
+const IMP_ZERO_TXT='這個檔案沒有讀到可以匯入的資料（0 列），所以不能匯入；原本的資料不會動。請確認檔案裡有填資料、選的廠區和年度對不對。如果是要把這一頁的資料清空，請用頁面上方的「🗑 清空本頁」。';
 function impZeroMsg(n){ return n?'':'<div class="msg err" style="margin-bottom:8px">⚠ '+IMP_ZERO_TXT+'</div>'; }
 function impZeroAttr(n){ return n?'':' disabled title="這個檔案讀到 0 列，不能匯入"'; }
 window.impZeroMsg=impZeroMsg; window.impZeroAttr=impZeroAttr;
