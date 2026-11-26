@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-122</b> · 2026/11/26</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-123</b> · 2026/11/26</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -5489,7 +5489,7 @@ function facC05Render(code){
   });
   /* V129-122（使用者 261126「A04 照示意併成一列」）：2025 以前照國家建、2026 合成 ALL、值都一樣的代號 → 畫面併成 ALL 一列，區域欄下面註明以前只有哪些國家。
      資料庫不動（條目的區域還是原本的）；只對清單內的代號，而且值全部相同、年度不重疊才併，不符合就照原本分列。 */
-  const C5MERGE=['C05-A04-01'];
+  const C5MERGE=['C05-A04-01','C05-B04-01'];   /* V129-123：B04 也併（使用者 261126） */
   subs.forEach(S=>{ if(S.isOld||S.split||C5MERGE.indexOf(S.key)<0)return;
     const oth=S.facs.filter(f=>rgOf(f)!=='ALL'); if(!oth.length||oth.length===S.facs.length)return;
     const vs=S.facs.map(eqOf); if(vs.some(v=>v==null||Math.abs(v-vs[0])>1e-9))return;
@@ -5542,8 +5542,8 @@ function facC05Render(code){
   /* 一、代號總表（大類 × 處理方式）：只列最後一個年度係數庫真的有條目的代號 */
   const WAYS=[['01','燃燒'],['03','掩埋'],['04','回收'],['05','熱處理'],['06','物理處理'],['07','汙水處理'],['99','其他']];
   const nowKeys=[...new Set(all.filter(f=>+f.factor_year===maxY&&isNew(esg(f))).map(esg))].sort();
-  const th='padding:5px 8px;background:var(--p);color:#fff;font-size:12px;text-align:left', c1='padding:5px 8px;border:1px solid #d5e3db;vertical-align:top;font-size:12px;line-height:1.6;text-align:left';   /* 使用者 261125：文字統一靠左、數字靠右 */
-  let mx='<table style="width:100%;border-collapse:collapse;table-layout:auto;margin:4px 0 10px"><thead><tr><th style="'+th+';width:150px">大類</th>'+WAYS.map(w=>'<th style="'+th+'">'+w[0]+' '+w[1]+'</th>').join('')+'</tr></thead><tbody>';
+  const th='padding:5px 8px;background:var(--p);color:#fff;font-size:12px;text-align:left', c1='padding:5px 8px;border:1px solid #d5e3db;vertical-align:top;font-size:12px;line-height:1.6;text-align:left;white-space:normal';   /* 使用者 261125：文字統一靠左、數字靠右 */
+  let mx='<table data-gfit="off" style="width:100%;border-collapse:collapse;table-layout:fixed;margin:4px 0 10px"><colgroup><col style="width:150px">'+WAYS.map(w=>w[0]==='07'?'<col style="width:162px">':'<col>').join('')+'</colgroup><thead><tr><th style="'+th+'">大類</th>'+WAYS.map(w=>'<th style="'+th+'">'+w[0]+' '+w[1]+'</th>').join('')+'</tr></thead><tbody>';
   BORD.forEach(b=>{ mx+='<tr><td style="'+c1+';font-weight:800;background:#eef5f1"><a href="javascript:void(0)" onclick="var e=document.getElementById(&#39;fc5big_'+b+'&#39;);if(e)e.scrollIntoView({block:&#39;center&#39;})" style="color:var(--d)">'+facEsc(b+' '+(W5BIG[b]||''))+'</a></td>'
       +WAYS.map(w=>{ const ks=nowKeys.filter(k=>k.charAt(4)===b&&k.slice(5,7)===w[0]); return '<td style="'+c1+'">'+ks.map(k=>{ const sub=w5optNm(k.slice(5)); const m2=sub.match(/（(.*)）$/); return '<a href="javascript:void(0)" onclick="var e=document.getElementById(&#39;fveh_'+k+'&#39;);if(e)e.scrollIntoView({block:&#39;center&#39;})" style="white-space:nowrap;color:var(--p)"><b style="font-family:Consolas,monospace">'+facEsc(short(c5D(k)))+'</b></a>'+((/^C05-E/.test(k)||m2)?' <span style="color:#5d6f66">'+facEsc(m2?m2[1]:'一般')+'</span>':''); }).join('<br>')+'</td>'; }).join('')+'</tr>'; });
   mx+='</tbody></table>';
