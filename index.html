@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-118</b> · 2026/11/25</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-119</b> · 2026/11/25</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -13227,14 +13227,21 @@ function cmImportPreview(){
   h+='</tbody></table>';
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+cmesc(x)).join('<br>')+(warn.length>12?'<br>…另 '+(warn.length-12)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列（連同個資）；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的列。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'</div>';
-  cmdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="cmImportGo()">確認匯入</button>');
+  { const n0=B.persons.length+B.aggs.length; h=impZeroMsg(n0)+h;   /* V129-119 */
+  cmdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="cmImportGo()"'+impZeroAttr(n0)+'>確認匯入</button>'); }
 }
 /* ══ V113：匯入不會只寫進一半——先寫新的、全部成功才刪原本的；中途失敗就把剛寫的收回、原本的不動 ══ */
 async function impDel(ids){ let n=0;
   for(let i=0;i<ids.length;i+=200){ const {data,error}=await sb.from('ghg_activity_data').delete().in('record_id',ids.slice(i,i+200)).select('record_id');
     if(error)return {ok:false,n:n,err:error.message}; n+=(data||[]).length; }
   return n===ids.length?{ok:true,n:n}:{ok:false,n:n,err:'只刪到 '+n+'／'+ids.length+' 筆（可能沒有權限、年度已鎖住或登入逾時）'}; }
+/* V129-119：匯入讀到 0 列——原本照樣走 impSwap：什麼都沒寫、卻把這個廠年原本的登錄頁／匯入列刪掉。現在預覽停用「確認匯入」，impSwap 自己也擋一次。 */
+const IMP_ZERO_TXT='這個檔案讀到 0 列可以匯入，所以不能匯入；原本的資料不會動。請確認檔案裡有填資料、選的廠區和年度對不對。如果是要把這一頁的資料清空，請用頁面上方的「🗑 清空本頁」。';
+function impZeroMsg(n){ return n?'':'<div class="msg err" style="margin-bottom:8px">⚠ '+IMP_ZERO_TXT+'</div>'; }
+function impZeroAttr(n){ return n?'':' disabled title="這個檔案讀到 0 列，不能匯入"'; }
+window.impZeroMsg=impZeroMsg; window.impZeroAttr=impZeroAttr;
 async function impSwap(o){   /* o.oldQ＝建立「要被換掉的列」查詢（select record_id）；o.rows＝新列；o.sel＝寫入後要讀回的欄 */
+  if(!o.rows||!o.rows.length)throw new Error(IMP_ZERO_TXT);   /* V129-119：0 列＝不讀、不寫、不刪 */
   const old=await sbAll(()=>o.oldQ().order('record_id'));
   if(old.error)throw new Error('讀不到原本的資料，沒有匯入任何東西：'+old.error.message);
   const oldIds=[...new Set((old.data||[]).map(x=>x.record_id))], got=[];
@@ -14024,7 +14031,8 @@ function rlImportPreview(){
   h+='</tbody></table>';
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+rlesc(x)).join('<br>')+(warn.length>12?'<br>…另 '+(warn.length-12)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 筆；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 筆是批次收割的資料，不會動。':'')+'　收集表自己算的碳排只留作比對；系統碳排＝美金（原幣 ÷ 系統匯率表）× 係數庫 '+facY(y)+' 年。</div>';
-  rldlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rlImportGo()"'+(B.needCur?' disabled title="還沒選幣別"':(B.needPick.length?' disabled title="還有 '+B.needPick.length+' 筆沒選類別"':''))+'>確認匯入</button>'); }
+  h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
+  rldlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rlImportGo()"'+(!B.rows.length?impZeroAttr(0):B.needCur?' disabled title="還沒選幣別"':(B.needPick.length?' disabled title="還有 '+B.needPick.length+' 筆沒選類別"':''))+'>確認匯入</button>'); }
 async function rlImportGo(){
   if(!rlcanEdit())return;
   const B=rlImportBuild(); if(B.needCur){ alert('這份原版表沒有幣別欄，請先在預覽選幣別再匯入。'); return; } if(B.needPick.length){ alert('還有 '+B.needPick.length+' 筆資產沒選類別，選完才能匯入。'); return; }   /* V129-116 */
@@ -14396,7 +14404,8 @@ function feImportPreview(){
   h+='</tbody></table>';
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+feesc(x)).join('<br>')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　收集表自己算的排放量只留作比對；系統碳排＝充填量 × 係數庫 '+facY(y)+' 年。</div>';
-  fedlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="feImportGo()">確認匯入</button>'); }
+  h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
+  fedlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="feImportGo()"'+impZeroAttr(B.rows.length)+'>確認匯入</button>'); }
 async function feImportGo(){
   if(!fecanEdit())return;
   const B=feImportBuild(); const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_code','_xt','_ex'].forEach(k=>delete o[k]); if(curGhgUser)o.created_by=curGhgUser.emp_id; return o; });
@@ -15717,7 +15726,8 @@ function rfImportPreview(){ const I=window._rfImp, B=rfImportBuild(), y=W10.year
   const warn=B.warn.slice(); if(noType)warn.unshift(noType+' 款設備從名稱判斷不出設備類型，匯入後請在頁面上選（沒選的碳排先記 0）');
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+rfesc(x)).join('<br>')+(warn.length>12?'<br>…另 '+(warn.length-12)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的舊資料，不會動。':'')+'　收集表的逸散率、GWP、排放量只留作比對；系統碳排照對照表。</div>';
-  rfdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rfImportGo()">確認匯入</button>'); }
+  h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
+  rfdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rfImportGo()"'+impZeroAttr(B.rows.length)+'>確認匯入</button>'); }
 async function rfImportGo(){ if(!rfcanEdit())return;
   const B=rfImportBuild(); const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_x','_gas','_t'].forEach(k=>delete o[k]); return o; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+ins.length+' 列）</div>';
@@ -16104,7 +16114,8 @@ function btImportPreview(){ const I=window._btImp, B=btImportBuild(), y=W6.year;
   h+='</tbody></table>';
   if(B.warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+B.warn.slice(0,14).map(x=>'・'+btesc(x)).join('<br>')+(B.warn.length>14?'<br>…另 '+(B.warn.length-14)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　鐵路、捷運、陸運用系統係數算，跟收集表的係數不同時會有差；航空、台灣高鐵、客船照收集表逐趟值。</div>';
-  btdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="btImportGo()">確認匯入</button>'); }
+  h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
+  btdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="btImportGo()"'+impZeroAttr(B.rows.length)+'>確認匯入</button>'); }
 async function btImportGo(){ if(!btcanEdit())return;
   const B=btImportBuild(); if(curGhgUser)B.rows.forEach(o=>{ o.created_by=curGhgUser.emp_id; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+B.rows.length+' 列）</div>';
@@ -16251,7 +16262,8 @@ function wstImportPreview(){ const I=window._w5Imp, B=wstImportBuild(), y=W5.yea
   if(B.warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+B.warn.slice(0,12).map(x=>'・'+w5esc(x)).join('<br>')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　處理排放用系統係數庫（跟收集表的係數不同時會有差）；運輸用 C04／C09 共用運輸係數表（照「運輸工具」對車種）。</div>';
   const nLeft=B.need.filter(n=>!n.vp).length, nLeftC=B.needC.filter(n=>!n.b||!n.w).length;
-  w5dlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstImportGo()"'+((nLeft||nLeftC)?' disabled title="'+(nLeftC?'還有 '+nLeftC+' 列沒選大類或處理方式':'')+(nLeft&&nLeftC?'；':'')+(nLeft?'還有 '+nLeft+' 列沒選車種':'')+'"':'')+'>確認匯入</button>'); }
+  h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
+  w5dlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstImportGo()"'+(!B.rows.length?impZeroAttr(0):(nLeft||nLeftC)?' disabled title="'+(nLeftC?'還有 '+nLeftC+' 列沒選大類或處理方式':'')+(nLeft&&nLeftC?'；':'')+(nLeft?'還有 '+nLeft+' 列沒選車種':'')+'"':'')+'>確認匯入</button>'); }
 function wstImpCp(sel){ const I=window._w5Imp; if(!I)return; I.cpick=I.cpick||{}; const k=sel.dataset.ck, f=sel.dataset.cf, v0=sel.dataset.cv, v=sel.value, o=(I.cpick[k]=I.cpick[k]||{});   /* V129-116：同樣寫法、這一欄還沒選的列一起帶 */
   if(v){ o[f]=v; if(sel.dataset.auto!=='1')document.querySelectorAll('select[data-ck][data-cf="'+f+'"]').forEach(x=>{ if(x!==sel&&x.dataset.cv===v0){ const p=(I.cpick[x.dataset.ck]=I.cpick[x.dataset.ck]||{}); if(!p[f])p[f]=v; } }); } else delete o[f];
   wstImportPreview(); }
