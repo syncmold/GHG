@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-124</b> · 2026/11/26</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-127</b> · 2026/11/27</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -523,6 +523,23 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
       <div class="fld" style="flex:0;align-self:end"><button onclick="FAC_FID=null;FAC_HL=null;loadFactors()">查詢</button></div><div class="fld" id="f_gsslot" style="flex:1;min-width:320px;align-self:end"></div></div><!-- V34:手動查詢即解除單一條目鎖定；V70-10:全庫搜尋框改放本列右側(f_gsslot) -->
     <div id="f_tblcard"></div>
     <div id="f_result" style="margin-top:8px"></div>
+    <div id="f_howto" style="margin-top:14px;border:2px solid #1B8A60;border-radius:8px;background:#f3faf6;padding:10px 14px;text-align:left"><!-- V129-125：使用者 261126「放在係數庫的下面，讓其他人知道是怎麼運作的」 -->
+      <div style="font-size:14.5px;font-weight:700;color:#0d5c40;margin-bottom:6px">ⓘ 係數怎麼運作（2026 年起）</div>
+      <ol style="margin:0;padding-left:22px;font-size:12.5px;line-height:1.8">
+        <li><b>每年開帳</b>：先把前一年的係數抄成新年度的參考值，狀態是「待確認」。ESG 小組跟顧問確認後，改成正確的值，狀態變「已確認」。</li>
+        <li><b>廠區輸入或匯入時</b>，系統先看資料有沒有填完整，再照「類別、種類、處理方式、區域、年度」到係數庫找對應的係數：
+          <table style="border-collapse:collapse;font-size:12.5px;margin:4px 0 2px;table-layout:fixed;width:100%"><colgroup><col style="width:150px"><col></colgroup>
+            <thead><tr><th style="background:#1B8A60;color:#fff;padding:5px 8px;text-align:left">找到的情況</th><th style="background:#1B8A60;color:#fff;padding:5px 8px;text-align:left">系統怎麼做</th></tr></thead>
+            <tbody>
+              <tr><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left">已確認</td><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left">照用。</td></tr>
+              <tr><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left">待確認</td><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left">先照用，資料可以存。ESG 確認後如果改了值，資料登錄頁的「系統算」會照係數庫新的值算。</td></tr>
+              <tr><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left;color:#9a6200;font-weight:700">資料沒填完整</td><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left"><span style="color:#9a6200;font-weight:700">擋下，不讓存（匯入整份不匯入）。</span>畫面會寫哪一列缺什麼（例如交通工具、冷媒、設備類型沒選），請填的人自己補好再存，不用找 ESG。</td></tr>
+              <tr><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left;color:#a33;font-weight:700">找不到</td><td style="border-bottom:1px solid #e3ece7;padding:5px 8px;text-align:left"><span style="color:#a33;font-weight:700">擋下，不讓存（匯入整份不匯入）。</span>畫面會寫出缺哪一條，請跟 ESG 小組反應；ESG 補上係數後，再重新輸入或匯入。</td></tr>
+            </tbody></table></li>
+        <li><b>為什麼找不到要擋下</b>：如果照樣存，碳排會記 0，看起來跟正常資料一樣；之後沒有人補係數，就會一直少算、也沒有人知道。</li>
+        <li><b>2025 年以前已申報的年度</b>不受這條影響，照原本的資料。</li>
+      </ol>
+    </div>
   </div>
 
   <div class="foot">主綠 #1B8A60 ｜ 沿用 SyncHub 設計 ｜ 計算：活動量 × 係數 × GWP（系統即時運算，不存錯數字）｜ <b>碳排數字一律四捨五入至小數第 4 位</b>（差異比較先取 4 位再算，消除尾差）</div>
@@ -3016,7 +3033,7 @@ function tplC05Lists(site,year){ const fy=facY(+year), bigs=Object.keys(W5BIG).f
   bigs.forEach(b=>W5OPT.forEach(o=>{ if(w5lib('C05-'+b+o[0],site,year))have.push(W5BIG[b]+' ＋ '+o[1]); }));
   let TL=[]; try{ TL=w5trnItems(site); }catch(e){} if(!TL.length)throw new Error('運輸係數表還沒讀完，請等這一頁的表格出來後再按一次');   /* V127 */
   return [['「廢棄物種類」下拉選單的選項（看廢棄物本身是哪一種）',bigs.map(b=>W5BIG[b])],['「處理方式」下拉選單的選項（最後怎麼處理掉；只寫「貯存」「分類」不算，查不到請先問清運商）',W5OPT.map(o=>o[1])],['「運輸工具」下拉選單的選項（清運車的車種，照噸數選；排前面的是本廠所在區域的車種。C4／C5／C9 運輸共用同一張係數表，在係數庫 C04 維護）',TL.map(x=>x.veh).filter((v,i,a)=>a.indexOf(v)===i)],
-    ['這個廠區 '+fy+' 年版係數庫有處理係數的組合（種類 ＋ 處理方式）。不在這裡的組合系統對不到係數，處理排放會先記 0；請向 ESG 反應，ESG 確認係數後會加進係數庫',have.length?have:['（係數庫目前沒有這個廠區這一年的處理係數）']]]; }
+    ['這個廠區 '+fy+' 年版係數庫有處理係數的組合（種類 ＋ 處理方式）。不在這裡的組合系統對不到係數，'+(nofacOn(year)?'不能匯入；請向 ESG 反應，ESG 補上係數後再匯入':'處理排放會先記 0；請向 ESG 反應，ESG 確認係數後會加進係數庫'),have.length?have:['（係數庫目前沒有這個廠區這一年的處理係數）']]]; }
 TPLS['C05']={code:'C05',name:'營運廢棄物',lists:tplC05Lists,how:[
   '1. 一次清運填一列（同一種廢棄物、同一種處理方式、同一家清運商，也可以一個月合成一列）。第 1 列寫「必填」的一定要填。第 1、2 列與分頁名稱請不要改。',
   '2. 「廢棄物種類」「處理方式」用下拉選單選（不在清單的字 Excel 會擋），系統用這兩欄帶處理係數。處理方式要填最後怎麼處理掉，只寫「貯存」不算。這個廠區哪些組合有係數，列在這一頁最下面。',
@@ -3072,7 +3089,7 @@ TPLS['A04-01']={code:'A04-01',name:'冷媒',how:[
   '1. 一台設備填一列；同一款（同名稱、同型號、同冷媒、同充填量）有很多台的，也可以填一列、把台數寫在「數量」。第 1 列寫「必填」的一定要填。第 1、2 列與分頁名稱請不要改。',
   '2. 「冷媒類型」用下拉選單選（看設備銘牌；選項在這一頁最下面）。',
   '3. 「初裝量(kg)」是單台設備裡的冷媒公斤數（銘牌寫公克的請 ÷ 1000），不是全部加起來的量。',
-  '4. 「設備類型」決定逸散率。可以用下拉選單直接選；沒選的話系統照「設備名稱」判斷（冷氣／空調、冰箱／飲水機、冰水機、乾燥機、車輛…），判斷不出來的列匯入後要到頁面上選，沒選之前碳排先記 0。',
+  '4. 「設備類型」決定逸散率。可以用下拉選單直接選；沒選的話系統照「設備名稱」判斷（冷氣／空調、冰箱／飲水機、冰水機、乾燥機、車輛…），判斷不出來的列：2025 以前匯入後要到頁面上選，沒選之前碳排先記 0；2026 年起不能匯入，請在「設備類型」欄選好再匯入。',
   '5. 碳排由系統算：單台充填量 × 台數 × 逸散率 × GWP。「再充裝量」系統先記錄下來，不參與計算。',
   '6. 填好回系統「資料登錄 › A04-01 冷媒」，選好跟樣板一樣的廠區與年度，按「📥 匯入收集表」選這個檔。會先預覽，按確認才寫入。',
   '7. 匯入會取代這個廠這一年原本用匯入或登錄頁輸入的冷媒資料，所以請把全廠的設備放在同一個檔。'],
@@ -8353,6 +8370,7 @@ window.fuelAsk=function(){
   let wSkip=0; if(C.water){ const k0=PEND.length; PEND=PEND.filter(r=>!(r._new&&wCalc(r).bill==null&&(r.extra||{})['原幣金額']==null)); wSkip=k0-PEND.length; }   /* V91：自來水空白帳單列不存 */
   const ret=Object.keys(F.retire).map(id=>F.recs.find(r=>r.record_id===+id)).filter(Boolean);
   if(!PEND.length&&!ret.length){alert('沒有變更需要儲存。');return;}
+  if(!gs.length&&PEND.some(r=>(+r.quantity||0)>0)&&nofacOn(F.year)){ dlg('不能儲存：係數庫沒有對應係數',nofacHtml(['係數代號 '+code()]),'<button onclick="fuelClose()">關閉</button>'); return; }   /* V129-125 */
   const badU=PEND.filter(r=>gs.length&&gs.some(g=>unitFactor(r.quantity_unit,g.unit,densOf(r))==null));
   let h=''; if(wSkip)h+='<div class="item" style="color:#7a8f84">空白帳單列（沒有帳單度數、也沒有費用）'+wSkip+' 列不存</div>';
   if(!gs.length)h+='<div class="item" style="color:#b8860b">★係數庫沒有 '+esc(code())+'，這次只存活動量，碳排留空。</div>';
@@ -8736,6 +8754,7 @@ window.matAsk=function(){
   if(!MPEND.length&&!ret.length){alert('沒有變更需要儲存。');return;}
   const miss=MPEND.filter(r=>!(mfld(r).mat||mfld(r).nm)); if(miss.length){alert('有 '+miss.length+' 列沒有材質／品名，請先填。');return;}
   mat80(); const noF=MPEND.filter(r=>!matEf(r)&&mat80In(r));   /* V129-29：80% 以外不用係數 */
+  if(noF.length&&nofacOn(F.year)){ dlg('不能儲存：有 '+noF.length+' 列還沒選係數',incHtml(noF.map(r=>[mfld(r).cls,mfld(r).nm,mfld(r).mat].filter(Boolean).join('｜')),0,'下面 '+noF.length+' 列還沒選係數，不能儲存。請在係數欄的清單選；清單裡找不到這種材質的，才請跟 ESG 小組反應（ESG 補上係數後再選）'),'<button onclick="fuelClose()">關閉</button>'); return; }   /* V129-125；V129-126：清單就是係數庫，沒選＝先自己選 */
   let h='';
   if(noF.length)h+='<div class="item" style="color:#b8860b">★有 '+noF.length+' 列尚未選係數：只存重量，碳排留空（之後可再補選）。</div>';
   ret.forEach(r=>{h+='<div class="item" style="color:#b8860b">'+esc(mfld(r).mat||mfld(r).nm||'')+' '+nf(r.quantity,4)+' t → 歸零留痕（移除）</div>';});
@@ -8948,7 +8967,7 @@ window.matImpApply=function(){
     r.attr1=x.cls; r.source_name=x.nm||r.source_name||''; r.attr2=x.zh; r.extra=r.extra||{}; if(r.extra['細類']!=null)r.extra['細類']=x.cls; if(r.extra['微類']!=null)r.extra['微類']=x.zh; if(r.extra['細項/材質']!=null)r.extra['細項/材質']=x.zh; r.extra['料況']=x.cd; if(x.det)r.extra['再生比例明細']=x.det; if(x.plm)r.extra['PLM未輸入t']=x.plm; else delete r.extra['PLM未輸入t']; r.quantity=+(x.q||0); r.quantity_unit=mcfg().unit;
     const m=matImpMatch(x); r.factor_id=m.fid||null; r._why=m.why||''; if(!m.fid){ r._ef=null; r._efX=(x.ef!=null&&x.ef>0)?x.ef:null; r._efsrc='檔案 '+b.sheet; } else { r._ef=null; }   /* V129-116：係數只認係數庫——對不到材質不拿檔案的係數算（檔案值留 _efX 比對） */ });
   MIMP=null; matRender();
-  dlg('✅ 已帶入 '+rows.length+' 列（新增 '+nN+'、更新 '+nU+(nD?'、移除既有 '+nD:'')+'；表格黃底標示）','<div style="font-size:13px;padding:6px 2px;color:#14603F">尚未寫入資料庫，請檢查係數欄（⚠ 未連結的列請從係數庫選；係數庫沒有這種材質的，碳排先記 0，請向 ESG 反應，ESG 確認係數後會加進係數庫）'+(nD?'、劃線的列＝儲存時歸零留痕（按 ↶ 可取消）':'')+'，再按 <b>💾 儲存</b>。</div>','<button onclick="fuelClose()">關閉</button>');
+  dlg('✅ 已帶入 '+rows.length+' 列（新增 '+nN+'、更新 '+nU+(nD?'、移除既有 '+nD:'')+'；表格黃底標示）','<div style="font-size:13px;padding:6px 2px;color:#14603F">尚未寫入資料庫，請檢查係數欄（⚠ 未連結的列請從係數庫選；係數庫沒有這種材質的，'+(nofacOn(F.year)?'不能儲存，請跟 ESG 小組反應，ESG 補上係數後再選':'碳排先記 0，請向 ESG 反應，ESG 確認係數後會加進係數庫')+'）'+(nD?'、劃線的列＝儲存時歸零留痕（按 ↶ 可取消）':'')+'，再按 <b>💾 儲存</b>。</div>','<button onclick="fuelClose()">關閉</button>');
 };
 /* ── 攔截 selectSrc（疊在燃料模組攔截之上） ── */
 const _prevMat=window.selectSrc;
@@ -9265,6 +9284,7 @@ function c03Render(){
   if(fy)fy.onchange=async()=>{F.year=+fy.value; await c03Load();};
 }
 window.c03Ask=function(){ if(!editable()||C3.man.length||C3.decl)return; const list=C3.calc.filter(c=>c.q>0||C3.auto.some(r=>r.category_id===c.kd.cat&&r.source_name===c.kd.name));
+  { const nf=list.filter(c=>c.q>0&&!c.pk); if(nf.length&&nofacOn(F.year)){ dlg('不能寫入：係數庫沒有對應係數',nofacHtml(nf.map(c=>c.kd.name+'｜'+facY(F.year))),'<button onclick="fuelClose()">關閉</button>'); return; } }   /* V129-125 */
   let h=''; let tot=0; list.forEach(c=>{ const ok=!!(c.pk&&!c.bad); if(ok)tot+=c.t; const db=C3.auto.find(r=>r.category_id===c.kd.cat&&r.source_name===c.kd.name); h+='<div class="item"><b>'+esc(c.kd.name)+'</b>　'+nf(c.qd,4)+' '+esc(c.ud)+(c.how?'（'+nf(c.q,2)+' '+esc(c.unit)+' '+esc(c.how)+'）':'')+' × '+(c.pk?nf(c.ef,10)+' '+esc(c.efu):'（無係數）')+' ＝ <b>'+(ok?nf(c.t,4):'0')+' t</b>　'+(db?'（更新既有自動列）':'（新增）')+(c.pk&&c.pk.multi?' <span style="color:#b8860b">⚠多條</span>':'')+(c.stale?' <span style="color:#b8860b">⚠'+efF(c.pk.f)+'年條目</span>':'')+'</div>'; });
   h+='<div class="item" style="font-weight:800">合計 '+nf(tot,4)+' tCO₂e　｜　'+esc(F.site)+' '+F.year+'　寫入 '+list.length+' 列（input_method C03自動）</div>';
   dlg('重算並寫入確認',h,'<button class="sec" onclick="fuelClose()">取消</button><button onclick="c03Go()">確定寫入</button>'); };
@@ -9690,6 +9710,7 @@ window.c12Ask=function(){ if(!editable()||C12.man.length||c12Decl(F.year))return
   if(!(cc&&cc.tot>0)){ dlg('無法寫入','<div class="item">C01 直接物料沒有 '+F.year+' 年資料，算不出占比。</div>','<button class="sec" onclick="fuelClose()">關閉</button>'); return; }
   if(!(cc.W>0)){ dlg('無法寫入','<div class="item">請先填「出貨總重量」。</div>','<button class="sec" onclick="fuelClose()">關閉</button>'); return; }
   const list=cc.rows.filter(c=>c.q>0||C12.auto.some(r=>r.source_name===c.kd.name));
+  { const nf=list.filter(c=>c.q>0&&!c.pk); if(nf.length&&nofacOn(F.year)){ dlg('不能寫入：係數庫沒有對應係數',nofacHtml(nf.map(c=>c.kd.name+'｜'+facY(F.year))),'<button onclick="fuelClose()">關閉</button>'); return; } }   /* V129-125 */
   let h=''; let tot=0; list.forEach(c=>{ const ok=!!(c.pk&&!c.bad&&c.q!=null); if(ok)tot+=c.t; const db=C12.auto.find(r=>r.source_name===c.kd.name); h+='<div class="item"><b>'+esc(c.kd.name)+'</b>　'+nf(cc.W,4)+' × '+c12pc(c.sh)+' ＝ '+nf(c.q,4)+' 公噸 × '+(c.pk?nf(c.ef,10)+' '+esc(c.efu):'（無係數）')+' ＝ <b>'+(ok?nf(c.t,4):'0')+' t</b>　'+(db?'（更新既有自動列）':'（新增）')+(c.pk&&c.pk.multi?' <span style="color:#b8860b">⚠多條</span>':'')+(c.stale?' <span style="color:#b8860b">⚠'+efF(c.pk.f)+'年條目</span>':'')+'</div>'; });
   h+='<div class="item" style="font-weight:800">合計 '+nf(tot,4)+' tCO₂e　｜　'+esc(F.site)+' '+F.year+'　寫入 '+list.length+' 列（input_method C12自動）</div>';
   dlg('重算並寫入確認',h,'<button class="sec" onclick="fuelClose()">取消</button><button onclick="c12Go()">確定寫入</button>'); };
@@ -10042,6 +10063,7 @@ window.svcAsk=function(){
   const noA=SPEND.filter(r=>svcAmt(r).v==null); if(noA.length){alert('有 '+noA.length+' 列沒有支付金額，請先填（沒有金額就按 ✕ 移除）。');return;}
   const noR=SPEND.filter(r=>!svcRateFor(svcAmt(r).cur,F.year)); if(noR.length){alert('匯率表沒有'+(CURZH[svcAmt(noR[0]).cur]||'')+'匯率，換不出美金，請先請管理者補匯率表。');return;}
   const noF=SPEND.filter(r=>!r._code);
+  if(noF.length&&nofacOn(F.year)){ dlg('不能儲存：有 '+noF.length+' 列還沒選係數類別',incHtml(noF.map(r=>String(r.source_name||'（沒填名稱）')),0,'下面 '+noF.length+' 列還沒選係數類別，不能儲存。請在類別欄的清單選；清單裡找不到合適類別的，才請跟 ESG 小組反應（ESG 補上係數後再選）'),'<button onclick="fuelClose()">關閉</button>'); return; }   /* V129-125；V129-126 */
   let h=''; if(noF.length)h+='<div class="item" style="color:#b8860b">★有 '+noF.length+' 列還沒選係數：只存金額，碳排先記 0（之後可再補選）。</div>';
   ret.forEach(r=>{h+='<div class="item" style="color:#b8860b">'+esc(r.source_name||'')+' '+nf(+r.quantity||0,2)+' USD → 歸零留痕（移除）</div>';});
   const nn=SPEND.filter(r=>r._new).length; const tu=SPEND.reduce((a,r)=>a+(svcCalc(r).usd||0),0), tt=SPEND.reduce((a,r)=>a+(svcCalc(r).t||0),0);
@@ -11243,7 +11265,7 @@ window.trnAsk=function(){
     if(bad.length){ dlg(F.cat==='C09'?'還有段沒分好 C4-2／C9，不能儲存':'集團公司名單讀不到，不能儲存','<div class="item" style="color:#a33">'+(F.cat==='C09'?'有 '+bad.length+' 段是「待補」或「請選合約」：貿易條件沒填的先在「貿易條件」欄選一種；依合約的段點紫框標籤選合約內容；運輸規則讀不到時只能點標籤人工指定（要寫原因）。':'系統判斷不了供應商是不是集團公司（C4-1A／C4-1B）。請先跑 SQL 678（批389），或點分類標籤人工指定（要寫原因）。')+'</div>'+bad.slice(0,40).map(x=>'<div class="item" style="font-size:12px">'+esc(x)+'</div>').join('')+(bad.length>40?'<div class="item">…還有 '+(bad.length-40)+' 筆</div>':''),'<button onclick="fuelClose()">知道了</button>'); return; } }
   if(trnRuleY()&&F.cat==='C04'){ const ob=[]; SP.forEach(rt=>{ if(trnOgOn(rt))trnOgBad(rt).forEach(x=>ob.push('第 '+(rt._dn||'?')+' 列 '+(rt.nm||'（沒有名稱）')+'：'+x)); });   /* V129-104 起運地：沒填／不在清單／預帶沒確認＝不能存 */
     if(ob.length){ dlg('起運地還沒填好，不能儲存','<div class="item" style="color:#a33">2026 起每條進貨路線要照單據填「起運國家」；有空運或海運再填「裝貨港」「卸貨港」的國家（名稱可空白）。系統照這些挑係數，不看公司名稱。請點名稱下方的起運地（或 ▸ 展開）填好；黃底是上次填的值預帶，要按「✓ 確認」或改值：</div>'+ob.slice(0,40).map(x=>'<div class="item" style="font-size:12px">'+esc(x)+'</div>').join('')+(ob.length>40?'<div class="item">…還有 '+(ob.length-40)+' 筆</div>':''),'<button onclick="fuelClose()">知道了</button>'); return; } }
-  if(noV.length){ dlg('還有陸運段沒選車種，不能儲存','<div class="item" style="color:#a33">有 '+noV.length+' 段陸運還沒選車種（收集表只寫「貨車」這類看不出噸級的，匯入後也會停在這裡）。請在表格裡紅框的「車種」下拉選單選好再存：</div>'+noV.slice(0,40).map(x=>'<div class="item" style="font-size:12px">'+esc(x)+'</div>').join('')+(noV.length>40?'<div class="item">…還有 '+(noV.length-40)+' 段</div>':''),'<button onclick="fuelClose()">知道了</button>'); return; }
+  if(noV.length){ dlg('還有陸運段沒選車種，不能儲存','<div class="item" style="color:#a33">有 '+noV.length+' 段陸運還沒選車種（收集表只寫「貨車」這類看不出噸級的，匯入後也會停在這裡）。請在表格裡紅框的「車種」下拉選單選好再存（下拉選單裡沒有的車種，請跟 ESG 小組反應）：</div>'+noV.slice(0,40).map(x=>'<div class="item" style="font-size:12px">'+esc(x)+'</div>').join('')+(noV.length>40?'<div class="item">…還有 '+(noV.length-40)+' 段</div>':''),'<button onclick="fuelClose()">知道了</button>'); return; }
   let h='';
   ret.forEach(rt=>{ h+='<div class="item" style="color:#b8860b">'+esc(rt.nm||'')+'（'+(rt.rows||[]).length+' 段）→ 歸零留痕（移除）</div>'; });
   const R9=trnRuleY()&&F.cat==='C09', R4=trnRuleY()&&F.cat==='C04';
@@ -12001,7 +12023,7 @@ function wstAdd(big,way,kindName){
     w5dlg('＋ 新增清運', h, '<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstAddGo()">加一列</button>');
     setTimeout(()=>{ const f=()=>{ const b=document.getElementById('w5a_big').value, w=document.getElementById('w5a_way').value;
         const lib=w5lib('C05-'+b+w,W5.site,W5.year);
-        document.getElementById('w5a_hint').innerHTML=lib?('係數庫會自動帶：<b>'+w5f(lib.v,10)+' kgCO2e/t</b>（代號 '+c5D('C05-'+b+w)+'·'+lib.rg+'·'+facY(W5.year)+'）'+(c5Avg(lib.note)?'　這一條是處置平均（不分處理方式用同一個值）':'')+(lib.why?'　選用原因：'+w5esc(lib.why):'')+(lib.auth?'　出處：'+w5esc(lib.auth):'　<span style="color:#b8860b">出處待 ESG 確認</span>')):'<span style="color:#b8860b">係數庫目前沒有「'+W5BIG[b]+'·'+w5optNm(w)+'」在 '+w5rg(W5.site)+' '+facY(W5.year)+' 年的條目，處理排放會先記 0。請向 ESG 反應，ESG 確認係數後會加進係數庫。</span>'; };
+        document.getElementById('w5a_hint').innerHTML=lib?('係數庫會自動帶：<b>'+w5f(lib.v,10)+' kgCO2e/t</b>（代號 '+c5D('C05-'+b+w)+'·'+lib.rg+'·'+facY(W5.year)+'）'+(c5Avg(lib.note)?'　這一條是處置平均（不分處理方式用同一個值）':'')+(lib.why?'　選用原因：'+w5esc(lib.why):'')+(lib.auth?'　出處：'+w5esc(lib.auth):'　<span style="color:#b8860b">出處待 ESG 確認</span>')):'<span style="color:#b8860b">係數庫目前沒有「'+W5BIG[b]+'·'+w5optNm(w)+'」在 '+w5rg(W5.site)+' '+facY(W5.year)+' 年的條目，'+(nofacOn(W5.year)?'加了也不能儲存。請跟 ESG 小組反應，ESG 補上係數後再新增。':'處理排放會先記 0。請向 ESG 反應，ESG 確認係數後會加進係數庫。')+'</span>';   /* V129-126 */ };
       document.getElementById('w5a_big').onchange=f; document.getElementById('w5a_way').onchange=f; f(); },30);
     return;
   }
@@ -12031,6 +12053,8 @@ async function wstSave(){
   if(!chg.length&&!dels.length){ w5dlg('沒有變更','<div class="msg">這一頁沒有改動。</div>','<button onclick="fuelClose()">關閉</button>'); return; }
   { const bad=chg.filter(r=>w5isT(r)&&!w5e(r)['收集表隱藏列']&&((+r.quantity||0)>0||(w5n(w5e(r)['運輸距離km'])||0)>0)&&!w5trnMatch(String(w5e(r)['運輸工具']||r.equipment_name||'').replace(/^（未填運輸工具）$/,''),null));   /* V129-103：運輸工具沒選清楚不讓存 */
     if(bad.length){ w5dlg('還有運輸工具沒選清楚，不能儲存','<div class="msg err">有 '+bad.length+' 列有運輸距離，但運輸工具看不出噸級（例如只寫「貨車」）。請在「運輸工具」下拉選單選好車種再存：</div>'+bad.slice(0,40).map(r=>{ const e=w5e(r); return '<div class="fmini">・'+w5esc((e['廢棄物名稱']||e['廢棄物種類']||'')+'｜'+(e['處理地點']||'')+'｜運輸工具「'+(e['運輸工具']||'空白')+'」')+'</div>'; }).join(''),'<button onclick="fuelClose()">知道了</button>'); return; } }
+  if(nofacOn(W5.year)){ const nf=chg.filter(r=>{ if(w5isT(r)||w5e(r)['收集表隱藏列']||!((+r.quantity||0)>0))return false; const cd=String(w5e(r)['係數代號']||'').split('·')[0]; const lb=cd?w5lib(cd,W5.site,W5.year):null; return !(lb&&lb.v!=null); });   /* V129-125 */
+    if(nf.length){ w5dlg('不能儲存：係數庫沒有對應係數',nofacHtml(nf.map(r=>{ const e=w5e(r), cd=String(e['係數代號']||'').split('·')[0]; return (cd?(w5codeNm(cd)||cd)+'（'+c5D(cd)+'）':'（種類×處理方式對不到代號）')+'｜'+(e['廢棄物名稱']||e['廢棄物種類']||'')+'｜'+w5rg(W5.site)+'｜'+facY(W5.year); })),'<button onclick="fuelClose()">關閉</button>'); return; } }
   // 送出前補係數（依種類×處理方式×區域×年度）
   chg.forEach(r=>{
     if(w5isT(r))return;
@@ -12513,8 +12537,8 @@ function btAdd(bk){
         document.getElementById('bt_a_labw').style.display=BT_LAND[b]?'':'none';
         let msg='';
         if(BT_DIRECT[b])msg='碳排＝逐趟直查值（'+(b==='航空'?'ICAO Carbon Emissions Calculator 查航線':'台灣高鐵'===b?'站距對照表':b==='高鐵(台灣)'?'站距對照表':'請款單')+'），白底自己填。';
-        else if(BT_RAIL[b]){ const lab=b==='捷運'?'捷運':(b==='鐵路(台灣)'?'鐵路':'高鐵'); const lib=btlib(lab,''); msg=lib?('係數庫自動帶：<b>'+btf(lib.v,10)+' kgCO2e/pkm</b>（'+lib.fid+'＝'+btesc(lib.parts)+'）'):'<span style="color:#b8860b">係數庫沒有這一格（'+btesc(btrg(W6.site))+' '+facY(W6.year)+'），碳排會先記 0，請先請 ESG 補條目。</span>'; }
-        else { const lab=document.getElementById('bt_a_lab').value; const lib=btlib(lab,''); msg=(lib?('這個車種的彙總列會自動算：<b>'+btf(lib.v,10)+' kgCO2e/pkm</b>（'+lib.fid+'）'):'<span style="color:#b8860b">這個車種在 '+btesc(btrg(W6.site))+' '+facY(W6.year)+' 沒有係數（如「公車」批186 未編碼），彙總列碳排會是 0。</span>'); }
+        else if(BT_RAIL[b]){ const lab=b==='捷運'?'捷運':(b==='鐵路(台灣)'?'鐵路':'高鐵'); const lib=btlib(lab,''); msg=lib?('係數庫自動帶：<b>'+btf(lib.v,10)+' kgCO2e/pkm</b>（'+lib.fid+'＝'+btesc(lib.parts)+'）'):'<span style="color:#b8860b">係數庫沒有這一格（'+btesc(btrg(W6.site))+' '+facY(W6.year)+'），'+(nofacOn(W6.year)?'加了也不能儲存，請跟 ESG 小組反應，ESG 補上係數後再新增。':'碳排會先記 0，請先請 ESG 補條目。')+'</span>';   /* V129-126 */ }
+        else { const lab=document.getElementById('bt_a_lab').value; const lib=btlib(lab,''); msg=(lib?('這個車種的彙總列會自動算：<b>'+btf(lib.v,10)+' kgCO2e/pkm</b>（'+lib.fid+'）'):'<span style="color:#b8860b">這個車種在 '+btesc(btrg(W6.site))+' '+facY(W6.year)+' 沒有係數（如「公車」批186 未編碼），'+(nofacOn(W6.year)?'有公里數就不能儲存，請跟 ESG 小組反應。':'彙總列碳排會是 0。')+'</span>'); }
         document.getElementById('bt_a_hint').innerHTML=msg; };
       document.getElementById('bt_a_bk').onchange=f; document.getElementById('bt_a_lab').onchange=f; f(); },30);
     return;
@@ -12541,6 +12565,10 @@ async function btSave(){
   if(!btcanEdit()){ btdlg('🔒 不能存','<div class="msg err">這個年度已申報（或您沒有這個廠區的輸入權限），只看不改。</div>'); return; }
   const dels=W6.recs.filter(r=>r._del&&!r._new), chg=W6.recs.filter(r=>(r._chg||r._new)&&!r._del);   /* V129-22 */
   if(!chg.length&&!dels.length){ btdlg('沒有變更','<div class="msg">這一頁沒有改動。</div>'); return; }
+  if(nofacOn(W6.year)){ const nf=chg.filter(r=>{ const e=bte(r), b=btblk(r); if(e['收集表隱藏列']||BT_DIRECT[b])return false; if(!(btIsAgg(r)||BT_RAIL[b]))return false; const c=btrow(r); if(!(c.pkm>0))return false; return !btlib(r.attr2,String(e['車輛(收集表)']||'')); });   /* V129-125 */
+    const inc=nf.filter(r=>BT_LAND[btblk(r)]&&BT_KNOWN.indexOf(btVehBase(r))<0);   /* V129-126：車種認不出＝資料沒填完整 */
+    if(inc.length){ btdlg('不能儲存：有資料還沒填完整',incHtml(inc.map(r=>String(r.equipment_name||'')+'：'+(String(bte(r)['車輛(收集表)']||r.attr2||'').trim()?'車輛「'+String(bte(r)['車輛(收集表)']||r.attr2).trim()+'」系統認不出，請選車種':'車輛沒填，請選車種')))); return; }
+    if(nf.length){ btdlg('不能儲存：係數庫沒有對應係數',nofacHtml(nf.map(r=>String(r.equipment_name||'')+'「'+String(r.attr2||'')+'」｜'+btrg(W6.site)+'｜'+facY(W6.year)))); return; } }
   const ins=chg.filter(r=>r._new&&!(btIsAgg(r)&&!(+r.quantity)&&!(+r.co2e_draft))).map(r=>{const o=Object.assign({},r); delete o.record_id; delete o._new; delete o._chg; return o;});
   const ups=chg.filter(r=>!r._new);
   let msg=[];
@@ -13084,7 +13112,7 @@ function cmAdd(bk){
     cmdlg('＋ 新增一人',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="cmAddGo()">加一人</button>');
     setTimeout(()=>{ const f=()=>{ const b=document.getElementById('cm_a_bk').value, c=CM_NAME2CODE[b];
         const lib=cmlib(c,W7.site,W7.year);
-        document.getElementById('cm_a_hint').innerHTML=c===CM_HSR?'高鐵照<b>站間碳足跡</b>：選起站、迄站，填一趟的公斤數（查台灣高鐵站間碳足跡表）；碳排＝每趟公斤數 × 工作天數 × 2 ÷ 1000。':CM_ZERO[c]?'零排放（步行／腳踏車）：只記人數與距離，碳排 0。':(lib?('彙總列會自動算：<b>'+cmf(lib.v,10)+' kgCO2e/pkm</b>（'+cmesc(facCodeYr(lib.fid))+'＝'+cmesc(lib.parts)+'）'):'<span style="color:#b8860b">係數庫沒有「'+cmesc(b)+'」在 '+cmesc(cmrg(W7.site))+' '+facY(W7.year)+' 年的條目，彙總碳排會先是 0（請 ESG 補係數）。</span>'); };
+        document.getElementById('cm_a_hint').innerHTML=c===CM_HSR?'高鐵照<b>站間碳足跡</b>：選起站、迄站，填一趟的公斤數（查台灣高鐵站間碳足跡表）；碳排＝每趟公斤數 × 工作天數 × 2 ÷ 1000。':CM_ZERO[c]?'零排放（步行／腳踏車）：只記人數與距離，碳排 0。':(lib?('彙總列會自動算：<b>'+cmf(lib.v,10)+' kgCO2e/pkm</b>（'+cmesc(facCodeYr(lib.fid))+'＝'+cmesc(lib.parts)+'）'):'<span style="color:#b8860b">係數庫沒有「'+cmesc(b)+'」在 '+cmesc(cmrg(W7.site))+' '+facY(W7.year)+' 年的條目，'+(nofacOn(W7.year)?'有公里數就不能儲存，請跟 ESG 小組反應。':'彙總碳排會先是 0（請 ESG 補係數）。')+'</span>'); };
       const f2=()=>{ f(); const b=document.getElementById('cm_a_bk').value; if(cmIsBus(b))document.getElementById('cm_a_hint').innerHTML+='<div style="margin-top:4px;color:#1f4e79">公司大巴沿用「'+cmesc(CM_BUS[b])+'」的係數（沒有另外編代號）。加了人之後，請在頁面上方回答「公司大巴的油（電）是誰加的」。</div>'; };   /* V129-107 */
       document.getElementById('cm_a_bk').onchange=f2; f2(); },30);
     return;
@@ -13103,6 +13131,10 @@ async function cmSave(){
   if(!cmcanEdit()){ cmdlg('🔒 不能存','<div class="msg err">這個年度已申報（或您沒有這個廠區的輸入權限），只看不改。</div>'); return; }
   const dels=W7.recs.filter(r=>r._del&&!r._new), chg=W7.recs.filter(r=>(r._chg||r._new)&&!r._del);   /* V129-22 */
   if(!chg.length&&!dels.length){ cmdlg('沒有變更','<div class="msg">這一頁沒有改動。</div>'); return; }
+  if(nofacOn(W7.year)){ const inc=chg.filter(r=>cmIsAgg(r)&&(+r.quantity||0)>0&&!cme(r)['收集表隱藏列']&&!CM_NAME2CODE[cmblk(r)]);   /* V129-126：交通工具沒填或認不出＝資料沒填完整 */
+    if(inc.length){ cmdlg('不能儲存：有資料還沒填完整',incHtml(inc.map(r=>'「'+cmblk(r)+'」延人公里 '+cmf(+r.quantity||0,2)+'：交通工具沒填或認不出，請在收集表補好交通工具後重新匯入'))); return; } }
+  if(nofacOn(W7.year)){ const nf=chg.filter(r=>{ if(!cmIsAgg(r)||!((+r.quantity||0)>0)||cme(r)['收集表隱藏列'])return false; const bk=cmblk(r), cd=CM_NAME2CODE[bk]; if(!cd||CM_ZERO[cd])return false; if(cmIsBus(bk)&&cmBusFuel()==='self')return false; return !cmlib(cd,W7.site,W7.year); });   /* V129-125 */
+    if(nf.length){ cmdlg('不能儲存：係數庫沒有對應係數',nofacHtml(nf.map(r=>'「'+cmblk(r)+'」｜'+cmrg(W7.site)+'｜'+facY(W7.year)))); return; } }
   const strip=r=>{ const o=Object.assign({},r); ['record_id','_new','_chg','_pii','_piiChg'].forEach(k=>delete o[k]); return o; };
   const ins=chg.filter(r=>r._new&&!(cmIsAgg(r)&&!(+r.quantity)&&!(+r.co2e_draft)));
   const ups=chg.filter(r=>!r._new);
@@ -13236,7 +13268,7 @@ function cmImportPreview(){
       if(byN.length)warn.push(byN.length+' 位員工的交通工具寫公車、備註寫「'+[...new Set(byN.map(p=>String(p.d['備註']||'').trim()))].slice(0,4).join('」「')+'」→ 歸到「公司大巴」（不對的話請先改收集表的備註再匯入）');
       const fv=cmBusFuel(); warn.push('公司大巴 '+bp.length+' 人：係數沿用公車那一條；'+(fv==='lease'?'這個廠這個年度選的是「油資含在租約」→ 照算':(fv==='self'?'這個廠這個年度選的是「廠內自己加」→ 員工通勤不計，碳排記 0':'還沒回答「油（電）是誰加的」→ 先記 0，匯入後請在頁面上方回答（回答前不能送出審核）')));
       warn.push('收集表右表把公司大巴跟公車算在同一列，所以這兩列「收集表碳排放量」對不上是正常的'); } }
-  B.aggs.forEach(x=>{ if(x.code&&!CM_ZERO[x.code]&&!x.lib&&!(x.st&&!x.pkm))warn.push('係數庫沒有「'+x.veh+'」在 '+cmrg(W7.site)+' '+facY(W7.year)+' 年的條目 → 這一列碳排先記 0（請 ESG 年度開帳補係數）'); });
+  B.aggs.forEach(x=>{ if(x.code&&!CM_ZERO[x.code]&&!x.lib&&!(x.st&&!x.pkm)&&!nofacOn(W7.year))warn.push('係數庫沒有「'+x.veh+'」在 '+cmrg(W7.site)+' '+facY(W7.year)+' 年的條目 → 這一列碳排先記 0（請 ESG 年度開帳補係數）'); });
   const nPii=B.persons.filter(p=>p.d['工號']||p.d['姓名']||p.d['居住地址']).length;
   const exist=W7.recs.filter(r=>[CM_IMPORT,CM_MANUAL].indexOf(String(r.input_method||''))>=0).length;
   const other=W7.recs.length-exist;
@@ -13251,8 +13283,10 @@ function cmImportPreview(){
   h+='</tbody></table>';
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+cmesc(x)).join('<br>')+(warn.length>12?'<br>…另 '+(warn.length-12)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列（連同個資）；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的列。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'</div>';
+  { const NF=cmNofac(B); h=nofacHtml(NF,1)+h; window._cmNF=NF.length; }   /* V129-125 */
+  { const IN=cmInc(B); h=incHtml(IN,1)+h; window._cmIN=IN.length; }   /* V129-126 */
   { const n0=B.persons.length+B.aggs.length; h=impZeroMsg(n0)+h;   /* V129-119 */
-  cmdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="cmImportGo()"'+impZeroAttr(n0)+'>確認匯入</button>'); }
+  cmdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="cmImportGo()"'+impZeroAttr(n0)+nofacAttr(window._cmNF)+incAttr(window._cmIN)+'>確認匯入</button>'); }
 }
 /* ══ V113：匯入不會只寫進一半——先寫新的、全部成功才刪原本的；中途失敗就把剛寫的收回、原本的不動 ══ */
 async function impDel(ids){ let n=0;
@@ -13264,6 +13298,23 @@ const IMP_ZERO_TXT='這個檔案沒有讀到可以匯入的資料（0 列），�
 function impZeroMsg(n){ return n?'':'<div class="msg err" style="margin-bottom:8px">⚠ '+IMP_ZERO_TXT+'</div>'; }
 function impZeroAttr(n){ return n?'':' disabled title="這個檔案讀到 0 列，不能匯入"'; }
 window.impZeroMsg=impZeroMsg; window.impZeroAttr=impZeroAttr;
+/* V129-125：2026 年以後（含試打年度）找不到對應係數＝擋下不讓存、不讓匯入（使用者 261126「先挡下不让存」「不然万一你让它存了，最后碳排系数没有人维护，你也不知道啊」）。
+   開帳會先把前一年的係數抄成新年度（待確認），所以找不到＝前一年也沒有的新東西。2025 以前照舊。 */
+function nofacOn(y){ try{ const fy=Number(facY(y)); return isFinite(fy)&&fy>=2026; }catch(e){ return false; } }
+const NOFAC_ESG='請跟 ESG 小組反應：ESG 補上係數後，再重新輸入或匯入。';
+function nofacEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function nofacUniq(a){ const m=new Map(); a.forEach(x=>m.set(x,(m.get(x)||0)+1)); return [...m].map(([k,n])=>n>1?k+'（'+n+' 列）':k); }
+function nofacHtml(items,imp,lead){ if(!items||!items.length)return ''; const L=nofacUniq(items);
+  return '<div class="msg err" style="margin-bottom:8px;text-align:left;line-height:1.7">⛔ '+(lead||('係數庫沒有下面 '+L.length+' 項的係數，'+(imp?'這個檔案整份不能匯入（原本的資料不會動）':'不能儲存')))+'：<br>'
+    +L.slice(0,40).map(x=>'・'+nofacEsc(x)).join('<br>')+(L.length>40?'<br>…另 '+(L.length-40)+' 項':'')+'<br><b>'+NOFAC_ESG+'</b></div>'; }
+function nofacAttr(n){ return n?' disabled title="有係數庫沒有的係數，不能匯入"':''; }
+window.nofacOn=nofacOn; window.nofacHtml=nofacHtml; window.nofacAttr=nofacAttr;
+/* V129-126：資料沒填完整（使用者 261127「这个两个状况要区分一下」）＝黃框，自己補、不用找 ESG；先查這個，都填完整了才查係數庫（紅框）。 */
+function incHtml(items,imp,lead){ if(!items||!items.length)return ''; const L=nofacUniq(items);
+  return '<div class="msg" style="margin-bottom:8px;text-align:left;line-height:1.7;background:#fff6e0;border:2px solid #d48a00;color:#6b4600">⚠ '+(lead||('下面 '+L.length+' 項資料還沒填完整，'+(imp?'這個檔案整份不能匯入（原本的資料不會動）。請在收集表補好再匯入':'不能儲存。請補好再存')+'（不用找 ESG）'))+'：<br>'
+    +L.slice(0,40).map(x=>'・'+nofacEsc(x)).join('<br>')+(L.length>40?'<br>…另 '+(L.length-40)+' 項':'')+'</div>'; }
+function incAttr(n){ return n?' disabled title="有資料還沒填完整，不能匯入"':''; }
+window.incHtml=incHtml; window.incAttr=incAttr;
 async function impSwap(o){   /* o.oldQ＝建立「要被換掉的列」查詢（select record_id）；o.rows＝新列；o.sel＝寫入後要讀回的欄 */
   if(!o.rows||!o.rows.length)throw new Error(IMP_ZERO_TXT);   /* V129-119：0 列＝不讀、不寫、不刪 */
   const old=await sbAll(()=>o.oldQ().order('record_id'));
@@ -13283,11 +13334,14 @@ async function impSwap(o){   /* o.oldQ＝建立「要被換掉的列」查詢（
     throw new Error('新資料已全部寫入，原本的 '+oldIds.length+' 筆只刪掉 '+del.n+' 筆（'+del.err+'）；還有 '+(oldIds.length-del.n)+' 筆舊資料跟新資料重複，請把這個畫面截圖給系統管理。'); }
   return {got:got,oldN:oldIds.length}; }
 window.impSwap=impSwap; window.impDel=impDel;
+function cmInc(B){ if(!nofacOn(W7.year))return []; const o=B.persons.filter(p=>!p.code&&(+p.d.pkm||0)>0).map(p=>'收集表第 '+p.d._r+' 列：'+(String(p.d['交通工具']||'').trim()?'交通工具「'+String(p.d['交通工具']).trim()+'」系統認不出，請用下拉選單的交通工具':'交通工具沒填'));
+  B.aggs.filter(x=>x.est&&!x.code&&(x.pkm||0)>0).forEach(x=>o.push('收集表第 '+x.r+' 列（推估）：交通工具沒填或認不出')); return o; }   /* V129-126 */
+function cmNofac(B){ return nofacOn(W7.year)?B.aggs.filter(x=>x.code&&!CM_ZERO[x.code]&&!x.lib&&!(x.st&&!x.pkm)).map(x=>'「'+x.veh+'」｜'+cmrg(W7.site)+'｜'+facY(W7.year)):[]; }   /* V129-125 */
 async function cmImportGo(){
   if(!cmcanEdit())return;
   const t=await cmJwt();
   if(!t){ cmdlg('要先用密碼登入','<div class="msg err">匯入含員工個資（工號／姓名／居住地址），要寫進上鎖表需要登入憑證。請用密碼登入後再匯入。</div>'); return; }
-  const I=window._cmImp; const B=cmImportBuild(); const stamp='I'+Date.now();
+  const I=window._cmImp; const B=cmImportBuild(); const stamp='I'+Date.now(); if(cmInc(B).length){ alert('這個檔案有幾列資料還沒填完整（預覽黃框列的那幾列），整份不能匯入（原本的資料不會動）。請在收集表補好再匯入（不用找 ESG）。'); return; }   /* V129-126 */ if(cmNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */
   const note='匯入收集表 '+I.fname+'・'+B.sheet+'（'+new Date().toISOString().slice(0,10)+(curGhgUser?'・'+curGhgUser.emp_id:'')+'）';
   const base={site_id:W7.site,data_year:W7.year,data_month:null,category_id:'C07',source_name:'員工通勤',attr1:'員工通勤',status:'工作底稿',input_method:CM_IMPORT,gas_type:'CO2e',gwp:1};
   const main=[];
@@ -13794,7 +13848,7 @@ function rlAdd(code){
     setTimeout(()=>{ const sel=document.getElementById('rl_a_k'); if(!sel)return; const f=()=>{ const x=C.kinds.find(z=>z[0]===sel.value); const lib=x?rllib(x[1],W8.year):null;
         document.getElementById('rl_a_hint').innerHTML=x&&x[1]==='C15-E01'?'持股比例法：填投資對象公布的範疇一、範疇二與持股比率，碳排＝合計 × 比率（不用係數庫）。'
           :(lib?('代號 <b>'+rlesc(facCodeYr(lib.fid))+'</b> '+rlesc(rlcodeNm(x[1]))+'：'+rlf(lib.v,10)+' kgCO2e/美金（'+rlesc(lib.src)+'）')
-          :'<span style="color:#b8860b">係數庫還沒有 '+facY(W8.year)+' 年「'+rlesc(x?rlcodeNm(x[1]):'')+'」的條目，碳排會先是 0（請 ESG 年度開帳補係數）。</span>'); };
+          :'<span style="color:#b8860b">係數庫還沒有 '+facY(W8.year)+' 年「'+rlesc(x?rlcodeNm(x[1]):'')+'」的條目，'+(nofacOn(W8.year)?'加了也不能儲存，請跟 ESG 小組反應。':'碳排會先是 0（請 ESG 年度開帳補係數）。')+'</span>'); };
       sel.onchange=f; f(); },30);
     return;
   }
@@ -13843,6 +13897,8 @@ async function rlSave(){
     else if(C.inv&&!c.a.cur)bad.push(nm+'：請選幣別（台北總公司年底財報附表三是新台幣仟元＝TWD，金額要 ×1000 填元）');   /* V129-97 */
     else if(!c.R)bad.push(nm+'：系統匯率表沒有 '+c.a.cur+' 的匯率'); });
   if(bad.length){ rldlg('還不能存','<div class="msg err">'+[...new Set(bad)].map(rlesc).join('<br>')+'</div>'); return; }
+  if(nofacOn(W8.year)){ const nf=chg.filter(r=>{ const c=rlrow(r); return !c.e01&&c.noLib; });   /* V129-125 */
+    if(nf.length){ rldlg('不能儲存：係數庫沒有對應係數',nofacHtml(nf.map(r=>'「'+rlcodeNm(rlcode(r))+'」｜'+String(r.source_name||'')+'｜'+facY(W8.year)))); return; } }
   const msg=[];
   try{
     const ins=chg.filter(r=>r._new).map(rlBody);
@@ -14032,7 +14088,7 @@ function rlImportPreview(){
   const G={}; B.rows.forEach(r=>{ const k=r._ex?'不計入':r._code; const g=(G[k]=G[k]||{n:0,usd:0,co:0,xt:0,hasX:false,lib:r._ex?null:rllib(r._code,y)}); g.n++; g.usd+=(r.measurement_type==='金額'?(+r.quantity||0):0); g.co+=r.co2e_draft; if(r._xt!=null){ g.xt+=r._xt; g.hasX=true; } });
   const order=C.codes.map(x=>x[0]).filter(k=>G[k]).concat(G['不計入']?['不計入']:[]);
   const warn=[...new Set(B.warn)];
-  order.forEach(k=>{ if(k!=='不計入'&&k!=='C15-E01'&&!G[k].lib)warn.push('係數庫沒有 '+facY(y)+' 年「'+rlcodeNm(k)+'」的條目 → 這一類碳排先記 0（請 ESG 年度開帳補係數）'); });
+  order.forEach(k=>{ if(k!=='不計入'&&k!=='C15-E01'&&!G[k].lib&&!nofacOn(y))warn.push('係數庫沒有 '+facY(y)+' 年「'+rlcodeNm(k)+'」的條目 → 這一類碳排先記 0（請 ESG 年度開帳補係數）'); });
   if(W8.cat==='C08'&&y>declMaxY()){ const old=B.rows.filter(r=>r._code==='C08-E01'||r._code==='C08-S01'); if(old.length)warn.push(old.length+' 筆是設備或軟體（'+[...new Set(old.map(r=>r.source_name))].slice(0,3).join('、')+'）：ESG 260930 定調 2026 起設備租賃歸 C01-02 服務、ESG 261006 確認叉車不算車輛、軟體授權／資安服務也歸 C01-02；這次照收集表匯入，請確認'); }
   const fxd=B.rows.filter(r=>{ const e=r.extra||{}; const ux=rln(e['美金(收集表)']); return !r._ex&&r.measurement_type==='金額'&&ux>0&&r.quantity>0&&Math.abs(r.quantity/ux-1)>0.001; });   /* 收集表換美金的匯率跟系統匯率表不同 */
   if(fxd.length){ const e0=fxd[0].extra; const amt=rln(C.inv?e0['帳面金額']:e0['原幣金額']), ux=rln(e0['美金(收集表)']); const rx=amt&&ux?amt/ux:null, rs=fxd[0].quantity>0&&amt?amt/fxd[0].quantity:null;
@@ -14055,11 +14111,14 @@ function rlImportPreview(){
   h+='</tbody></table>';
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+rlesc(x)).join('<br>')+(warn.length>12?'<br>…另 '+(warn.length-12)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 筆；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 筆是批次收割的資料，不會動。':'')+'　收集表自己算的碳排只留作比對；系統碳排＝美金（原幣 ÷ 系統匯率表）× 係數庫 '+facY(y)+' 年。</div>';
+  { const NF=rlNofac(B); h=nofacHtml(NF,1)+h; window._rlNF=NF.length; }   /* V129-125 */
   h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
-  rldlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rlImportGo()"'+(!B.rows.length?impZeroAttr(0):B.needCur?' disabled title="還沒選幣別"':(B.needPick.length?' disabled title="還有 '+B.needPick.length+' 筆沒選類別"':''))+'>確認匯入</button>'); }
+  rldlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rlImportGo()"'+nofacAttr(window._rlNF)+(!B.rows.length?impZeroAttr(0):B.needCur?' disabled title="還沒選幣別"':(B.needPick.length?' disabled title="還有 '+B.needPick.length+' 筆沒選類別"':''))+'>確認匯入</button>'); }
+function rlNofac(B){ return nofacOn(W8.year)?B.rows.filter(r=>!r._ex&&r._code&&r._code!=='C15-E01'&&!rllib(r._code,W8.year)).map(r=>'「'+rlcodeNm(r._code)+'」｜'+facY(W8.year)):[]; }   /* V129-125 */
 async function rlImportGo(){
   if(!rlcanEdit())return;
   const B=rlImportBuild(); if(B.needCur){ alert('這份原版表沒有幣別欄，請先在預覽選幣別再匯入。'); return; } if(B.needPick.length){ alert('還有 '+B.needPick.length+' 筆資產沒選類別，選完才能匯入。'); return; }   /* V129-116 */
+  if(rlNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */
   const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_code','_xt','_ex'].forEach(k=>delete o[k]); if(curGhgUser)o.created_by=curGhgUser.emp_id; return o; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+ins.length+' 筆）</div>';
   try{
@@ -14314,7 +14373,7 @@ function feAdd(code){
     const h='<div class="fld"><label>滅火器類型 *</label><select id="fe_a_k">'+FE_TYPES.map(x=>'<option value="'+x[0]+'">'+feesc(x[2])+'</option>').join('')+'</select></div><div id="fe_a_hint" class="fmini" style="margin-top:6px"></div>';
     fedlg('＋ 新增一種滅火器',h,'<button onclick="fuelClose()">取消</button> <button onclick="feAddGo()">加一種</button>');
     setTimeout(()=>{ const sel=document.getElementById('fe_a_k'); if(!sel)return; const f=()=>{ const lib=felib(sel.value,W9.year);
-        document.getElementById('fe_a_hint').innerHTML=lib?('代號 <b>'+feesc(feCodeYr(lib.fid))+'</b>：'+fef(lib.v,10)+' kgCO₂/kg（'+feesc(lib.src)+'）'+(lib.v?'':'；不含溫室氣體，充填量照登但碳排 0')):'<span style="color:#b8860b">係數庫還沒有 '+facY(W9.year)+' 年這個類型的條目，碳排會先是 0（請 ESG 年度開帳補係數）。</span>'; };
+        document.getElementById('fe_a_hint').innerHTML=lib?('代號 <b>'+feesc(feCodeYr(lib.fid))+'</b>：'+fef(lib.v,10)+' kgCO₂/kg（'+feesc(lib.src)+'）'+(lib.v?'':'；不含溫室氣體，充填量照登但碳排 0')):'<span style="color:#b8860b">係數庫還沒有 '+facY(W9.year)+' 年這個類型的條目，'+(nofacOn(W9.year)?'加了也不能儲存，請跟 ESG 小組反應。':'碳排會先是 0（請 ESG 年度開帳補係數）。')+'</span>';   /* V129-126 */ };
       sel.onchange=f; f(); },30);
     return; }
   const t=fetype(code);
@@ -14340,6 +14399,10 @@ async function feSave(){
   const dels=W9.recs.filter(r=>W9.del[r.record_id]&&!r._new&&String(r.input_method||'')===FE_MANUAL);
   if(!chg.length&&!dels.length){ fedlg('沒有變更','<div class="msg">這一頁沒有改動。</div>'); return; }
   const bad=chg.filter(r=>!r.source_name).length; if(bad){ fedlg('還不能存','<div class="msg err">有 '+bad+' 列沒填滅火器名稱／規格。</div>'); return; }
+  if(nofacOn(W9.year)){ const inc=chg.filter(r=>{ const c=ferow(r); return !c.code&&!c.excl&&(+c.kg||0)>0; });   /* V129-126：類型認不出＝資料沒填完整 */
+    if(inc.length){ fedlg('不能儲存：有資料還沒填完整',incHtml(inc.map(r=>'「'+String(r.source_name||r.equipment_name||'（沒填名稱）')+'」：滅火器類型認不出，請刪掉這一列，用「＋ 新增」選類型重新加'))); return; } }
+  if(nofacOn(W9.year)){ const nf=chg.filter(r=>{ const c=ferow(r); return c.code&&!c.excl&&!c.lib&&(+c.kg||0)>0; });   /* V129-125 */
+    if(nf.length){ fedlg('不能儲存：係數庫沒有對應係數',nofacHtml(nf.map(r=>{ const c=ferow(r); return '「'+fetype(c.code)[2]+'」｜'+String(r.source_name||'')+'｜'+facY(W9.year); }))); return; } }
   const msg=[];
   try{
     const ins=chg.filter(r=>r._new).map(feBody);
@@ -14416,7 +14479,7 @@ function feImportPreview(){
   const I=window._feImp, B=feImportBuild(), y=W9.year;
   const G={}; B.rows.forEach(r=>{ const k=r._code; const g=(G[k]=G[k]||{n:0,kg:0,co:0,xt:0,hasX:false,nEx:0}); g.n++; if(r._ex)g.nEx++; else g.kg+=r.quantity; g.co+=r.co2e_draft; if(r._xt!=null){ g.xt+=r._xt; g.hasX=true; } });
   const order=FE_TYPES.map(x=>x[0]).filter(k=>G[k]); const warn=B.warn.slice();
-  order.forEach(k=>{ if(!felib(k,y))warn.push('係數庫沒有 '+facY(y)+' 年「'+fetype(k)[2]+'」的條目 → 碳排先記 0（請 ESG 年度開帳補係數）'); });
+  order.forEach(k=>{ if(!felib(k,y)&&!nofacOn(y))warn.push('係數庫沒有 '+facY(y)+' 年「'+fetype(k)[2]+'」的條目 → 碳排先記 0（請 ESG 年度開帳補係數）'); });
   const exist=W9.recs.filter(r=>[FE_IMPORT,FE_MANUAL].indexOf(String(r.input_method||''))>=0).length, other=W9.recs.length-exist;
   const tot=B.rows.reduce((s,r)=>s+r.co2e_draft,0), xtot=B.rows.reduce((s,r)=>s+(r._xt||0),0);
   let h='<div class="fmini" style="margin-bottom:6px">檔案：<b>'+feesc(I.fname)+'</b>　總表滅火器 '+B.rows.length+' 列'+(I.sc.sheets.length?'；明細分頁：'+feesc(I.sc.sheets.join('、')):'')+'</div>';
@@ -14428,11 +14491,13 @@ function feImportPreview(){
   h+='</tbody></table>';
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+feesc(x)).join('<br>')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　收集表自己算的排放量只留作比對；系統碳排＝充填量 × 係數庫 '+facY(y)+' 年。</div>';
+  { const NF=feNofac(B); h=nofacHtml(NF,1)+h; window._feNF=NF.length; }   /* V129-125 */
   h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
-  fedlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="feImportGo()"'+impZeroAttr(B.rows.length)+'>確認匯入</button>'); }
+  fedlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="feImportGo()"'+impZeroAttr(B.rows.length)+nofacAttr(window._feNF)+'>確認匯入</button>'); }
+function feNofac(B){ return nofacOn(W9.year)?B.rows.filter(r=>!r._ex&&r._code&&!(r.extra||{})['收集表隱藏列']&&!felib(r._code,W9.year)).map(r=>'「'+fetype(r._code)[2]+'」｜'+facY(W9.year)):[]; }   /* V129-125 */
 async function feImportGo(){
   if(!fecanEdit())return;
-  const B=feImportBuild(); const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_code','_xt','_ex'].forEach(k=>delete o[k]); if(curGhgUser)o.created_by=curGhgUser.emp_id; return o; });
+  const B=feImportBuild(); if(feNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */ const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_code','_xt','_ex'].forEach(k=>delete o[k]); if(curGhgUser)o.created_by=curGhgUser.emp_id; return o; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+ins.length+' 列）</div>';
   try{
     const SW=await impSwap({oldQ:()=>sb.from('ghg_activity_data').select('record_id').eq('category_id','A04-02').eq('site_id',W9.site).eq('data_year',W9.year).in('input_method',[FE_IMPORT,FE_MANUAL]),rows:ins});   /* V113 */
@@ -15646,6 +15711,10 @@ async function rfSave(){
   const dels=mine.filter(r=>W10.del[r.record_id]&&!r._new);
   if(!chg.length&&!dels.length){ rfdlg('沒有變更','<div class="msg">這一頁沒有改動。</div>'); return; }
   const bad=chg.filter(r=>!r.equipment_name).length; if(bad){ rfdlg('還不能存','<div class="msg err">有 '+bad+' 列沒填設備名稱。</div>'); return; }
+  if(nofacOn(W10.year)){ const inc=chg.filter(r=>{ const c=rfrow(r); return !c.ex&&(!c.t||!c.g||c.each==null||c.n==null); });   /* V129-126：設備類型／冷媒／單台充填量／台數沒填齊＝資料沒填完整 */
+    if(inc.length){ rfdlg('不能儲存：有資料還沒填完整',incHtml(inc.map(r=>{ const c=rfrow(r); const miss=[]; if(!c.t)miss.push('設備類型'); if(!c.g)miss.push('冷媒'); if(c.each==null)miss.push('單台充填量'); if(c.n==null)miss.push('台數'); return '「'+String(r.equipment_name||'')+'」：'+miss.join('、')+'沒填'; }))); return; } }
+  if(nofacOn(W10.year)){ const nf=chg.filter(r=>{ const c=rfrow(r); return !c.ex&&c.fx&&c.fx.miss; });   /* V129-125：係數庫沒有這個「設備類別 × 冷媒」組合 */
+    if(nf.length){ rfdlg('不能儲存：係數庫沒有對應係數',nofacHtml(nf.map(r=>{ const c=rfrow(r); return c.fx.code+'（'+c.t[0]+' × '+c.g[0]+'）｜'+facY(W10.year); }))); return; } }
   const inc=chg.filter(r=>rfrow(r).co==null).length;
   const msg=[];
   try{
@@ -15747,13 +15816,17 @@ function rfImportPreview(){ const I=window._rfImp, B=rfImportBuild(), y=W10.year
   RF_GAS.filter(g=>G[g[0]]).forEach(gg=>{ const g=G[gg[0]]; let d=g.hx?+(g.co-g.x).toFixed(4):null; if(d!=null&&Math.abs(d)<0.00005)d=0;
     h+='<tr><td class="tl">'+rfesc(gg[1]+' '+gg[0])+rfZhHTML(gg[0])+(gg[3]?' <span class="fmini">暫碼</span>':'')+'</td><td class="R">'+g.n+'</td><td class="R">'+rff(g.kg,0)+'</td><td class="R">'+rff(gg[2],0)+'</td><td class="R">'+rff(g.co,4)+'</td><td class="R">'+(g.hx?rff(g.x,4):'—')+'</td><td class="R"'+(d&&Math.abs(d)>0.0005?' style="color:#b8860b;font-weight:700"':'')+'>'+(d==null?'—':(d>0?'+':'')+rff(d,4))+'</td></tr>'; });
   h+='</tbody></table>';
-  const warn=B.warn.slice(); if(noType)warn.unshift(noType+' 款設備從名稱判斷不出設備類型，匯入後請在頁面上選（沒選的碳排先記 0）');
+  const warn=B.warn.slice(); if(noType&&!nofacOn(y))warn.unshift(noType+' 款設備從名稱判斷不出設備類型，匯入後請在頁面上選（沒選的碳排先記 0）');
   if(warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+warn.slice(0,12).map(x=>'・'+rfesc(x)).join('<br>')+(warn.length>12?'<br>…另 '+(warn.length-12)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的舊資料，不會動。':'')+'　收集表的逸散率、GWP、排放量只留作比對；系統碳排照對照表。</div>';
+  { const NF=rfNofac(B); h=nofacHtml(NF,1)+h; window._rfNF=NF.length; }   /* V129-125 */
+  { const IN=rfInc(B); h=incHtml(IN,1)+h; window._rfIN=IN.length; }   /* V129-126 */
   h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
-  rfdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rfImportGo()"'+impZeroAttr(B.rows.length)+'>確認匯入</button>'); }
+  rfdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="rfImportGo()"'+impZeroAttr(B.rows.length)+nofacAttr(window._rfNF)+incAttr(window._rfIN)+'>確認匯入</button>'); }
+function rfInc(B){ if(!nofacOn(W10.year))return []; const o=[]; B.rows.forEach(r=>{ const c=rfrow(r); if(c.ex||(c.t&&c.g&&c.each!=null&&c.n!=null))return; const miss=[]; if(!c.t)miss.push('設備類型'); if(!c.g)miss.push('冷媒'); if(c.each==null)miss.push('單台充填量'); if(c.n==null)miss.push('台數'); const xr=(r.extra||{})['收集表列']; o.push((xr!=null?'收集表第 '+xr+' 列':'')+'「'+String(r.equipment_name||'')+'」：'+miss.join('、')+'沒填'+(c.t?'':'（設備類型可在收集表「設備類型」欄選）')); }); return o; }   /* V129-126 */
+function rfNofac(B){ if(!nofacOn(W10.year))return []; const o=[]; B.rows.forEach(r=>{ const c=rfrow(r); if(!c.ex&&c.fx&&c.fx.miss)o.push(c.fx.code+'（'+c.t[0]+' × '+c.g[0]+'）｜'+facY(W10.year)); }); return o; }   /* V129-125 */
 async function rfImportGo(){ if(!rfcanEdit())return;
-  const B=rfImportBuild(); const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_x','_gas','_t'].forEach(k=>delete o[k]); return o; });
+  const B=rfImportBuild(); if(rfInc(B).length){ alert('這個檔案有幾列資料還沒填完整（預覽黃框列的那幾列），整份不能匯入（原本的資料不會動）。請在收集表補好再匯入（不用找 ESG）。'); return; }   /* V129-126 */ if(rfNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */ const ins=B.rows.map(r=>{ const o=Object.assign({},r); ['_x','_gas','_t'].forEach(k=>delete o[k]); return o; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+ins.length+' 列）</div>';
   try{
     const SW=await impSwap({oldQ:()=>sb.from('ghg_activity_data').select('record_id').eq('category_id','A04-01').eq('site_id',W10.site).eq('data_year',W10.year).in('input_method',[RF_IMPORT,RF_MANUAL]),rows:ins});
@@ -16119,13 +16192,13 @@ function btImportBuild(){
     if(!(pk>0)&&g.xpk>0){ pk=+g.xpk.toFixed(6); src='收集表右邊彙總欄的延人公里（逐趟沒填）'; }
     const co=lib&&pk?+(pk*lib.v/1000).toFixed(10):0; const xl=g.xagg!=null?g.xagg:(g.hx?g.xl:null);
     if(!(pk>0)&&xl==null)return;   /* 沒有公里數、收集表也沒碳排的車種不另開彙總列 */
-    if(!lib&&pk)warn.push(g.md+'「'+g.lab+'」在 '+btrg(W6.site)+' '+facY(y)+' 沒有係數，彙總列碳排先記 0；請向 ESG 反應，ESG 確認係數後會加進係數庫');
+    if(!lib&&pk&&!nofacOn(y))warn.push(g.md+'「'+g.lab+'」在 '+btrg(W6.site)+' '+facY(y)+' 沒有係數，彙總列碳排先記 0；請向 ESG 反應，ESG 確認係數後會加進係數庫');
     const x={'人數':g.n,'延人公里':pk,'彙總':'匯入後系統彙總＝同車種'+src+' × 係數','匯入彙總':1,'收集表':I.fname,'收集表分頁':g.sheet,'匯入':note,'匯入批':I.stamp};
     if(xl!=null)x['收集表碳排']=+xl.toFixed(10); if(lib)x['換算']='延人公里 '+btf(pk,4)+' × 係數 '+btf(lib.v,10)+' kgCO2e/pkm ÷ 1000 ＝ '+btf(co,6)+' t';
     rows.push(Object.assign({},base,{data_month:null,equipment_name:g.md,attr2:btImpVeh(g.lab,g.raw),measurement_type:'車種彙總',quantity:pk,quantity_unit:'延人公里',extra:Object.assign(x,{'車輛(收集表)':g.raw}),co2e_draft:co,
       ef_value:lib?lib.v:null,ef_unit:lib?'kgCO2e/pkm':null,ef_source:lib?'C06 運具係數代號':null,factor_id:lib?lib.fid:null}));
     s.co+=co; if(xl!=null){ s.xl+=xl; s.hx=true; } });
-  Object.entries(zero).forEach(([k,c])=>{ const p=k.split('|'); warn.unshift(p[0]+' '+c+' 趟碳排先記 0：'+p[1]); });   /* V119-5：放最前面 */
+  Object.entries(zero).forEach(([k,c])=>{ const p=k.split('|'); if(nofacOn(y)&&p[1].indexOf('對不到係數——')===0)return;   /* V129-126：2026 起紅框說明 */ warn.unshift(p[0]+' '+c+' 趟碳排先記 0：'+p[1]); });   /* V119-5：放最前面 */
   return {rows,warn,sum}; }
 function btImportPreview(){ const I=window._btImp, B=btImportBuild(), y=W6.year;
   const exist=W6.recs.filter(r=>[BT_IMPORT,'登錄頁'].indexOf(String(r.input_method||''))>=0).length, other=W6.recs.length-exist;
@@ -16138,10 +16211,16 @@ function btImportPreview(){ const I=window._btImp, B=btImportBuild(), y=W6.year;
   h+='</tbody></table>';
   if(B.warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+B.warn.slice(0,14).map(x=>'・'+btesc(x)).join('<br>')+(B.warn.length>14?'<br>…另 '+(B.warn.length-14)+' 項':'')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　鐵路、捷運、陸運用系統係數算，跟收集表的係數不同時會有差；航空、台灣高鐵、客船照收集表逐趟值。</div>';
+  { const NF=btNofac(B); h=nofacHtml(NF,1)+h; window._btNF=NF.length; }   /* V129-125 */
+  { const IN=btInc(B); h=incHtml(IN,1)+h; window._btIN=IN.length; }   /* V129-126 */
   h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
-  btdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="btImportGo()"'+impZeroAttr(B.rows.length)+'>確認匯入</button>'); }
+  btdlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button onclick="btImportGo()"'+impZeroAttr(B.rows.length)+nofacAttr(window._btNF)+incAttr(window._btIN)+'>確認匯入</button>'); }
+const BT_KNOWN=['汽車','計程車','機車','公車','飛機','客船','鐵路','高鐵','捷運'];   /* V129-126：btLab6 認得出的車種；認不出＝資料沒填完整 */
+function btUnk(raw){ return BT_KNOWN.indexOf(btLab6(raw))<0; }
+function btInc(B){ if(!nofacOn(W6.year))return []; return B.rows.filter(r=>{ const e=r.extra||{}; return !e['收集表隱藏列']&&r.measurement_type==='車種彙總'&&(+r.quantity||0)>0&&!r.factor_id&&btUnk(e['車輛(收集表)']); }).map(r=>String(r.equipment_name||'')+'：'+(String((r.extra||{})['車輛(收集表)']||'').trim()?'車輛「'+String((r.extra||{})['車輛(收集表)']).trim()+'」系統認不出，請在收集表用下拉選單的車種':'車輛沒填，請在收集表用下拉選單選車種')); }   /* V129-126 */
+function btNofac(B){ if(!nofacOn(W6.year))return []; return B.rows.filter(r=>{ const e=r.extra||{}; if(e['收集表隱藏列'])return false; return (r.measurement_type==='車種彙總'&&(+r.quantity||0)>0&&!r.factor_id&&!btUnk(e['車輛(收集表)']))||String(e['規則']||'').indexOf('係數庫沒有這一格')===0; }).map(r=>String(r.equipment_name||'')+'「'+String(r.attr2||'')+'」｜'+btrg(W6.site)+'｜'+facY(W6.year)); }   /* V129-125 */
 async function btImportGo(){ if(!btcanEdit())return;
-  const B=btImportBuild(); if(curGhgUser)B.rows.forEach(o=>{ o.created_by=curGhgUser.emp_id; });
+  const B=btImportBuild(); if(btInc(B).length){ alert('這個檔案有幾列資料還沒填完整（預覽黃框列的那幾列），整份不能匯入（原本的資料不會動）。請在收集表補好再匯入（不用找 ESG）。'); return; }   /* V129-126 */ if(btNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */ if(curGhgUser)B.rows.forEach(o=>{ o.created_by=curGhgUser.emp_id; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+B.rows.length+' 列）</div>';
   try{
     const SW=await impSwap({oldQ:()=>sb.from('ghg_activity_data').select('record_id').eq('category_id','C06').eq('site_id',W6.site).eq('data_year',W6.year).in('input_method',[BT_IMPORT,'登錄頁']),rows:B.rows});
@@ -16266,7 +16345,7 @@ function wstImportPreview(){ const I=window._w5Imp, B=wstImportBuild(), y=W5.yea
   const tot=B.rows.reduce((s,r)=>s+(+r.co2e_draft||0),0), xt=Object.values(B.G).reduce((s,g)=>s+g.xw+g.xt,0);
   let h='<div class="fmini" style="margin-bottom:6px">檔案：<b>'+w5esc(I.fname)+'</b>　分頁：'+w5esc(I.packs.map(p=>p.sheet+'（'+p.rows.length+' 列）').join('、'))+'</div>';
   h+='<div class="msg" style="background:#f6fbf8;border:1px solid #cfe0d6">匯入到 <b>'+w5esc(W5.site+' '+(trialY(y)?y+' 試打':y))+'</b>：'+B.rows.filter(r=>r.quantity_unit==='公噸').length+' 筆清運 → 系統算碳排合計 <b>'+w5f(tot,4)+' t</b><span class="fmini">　（收集表自己算的是 '+w5f(xt,4)+' t）</span></div>';
-  if(B.noLib.length){   /* V129-116：對不到係數的，紅框警示、請填表的人找 ESG；可以先匯入，處理排放記 0 */
+  if(B.noLib.length&&!nofacOn(y)){   /* V129-116：對不到係數的，紅框警示、請填表的人找 ESG；可以先匯入，處理排放記 0（V129-125：2026 起改成擋下，見下面） */
     h+='<div class="msg" style="border:2px solid #c0392b;background:#fdecea;color:#7a1f14">⚠ 有 '+B.noLib.reduce((a,x)=>a+x[1],0)+' 列<b>對不到係數庫的係數</b>：'+B.noLib.map(x=>'<b>'+w5esc(w5codeNm(x[0])||x[0])+'</b>（'+w5esc(c5D(x[0]))+'，'+x[1]+' 列）').join('、')+'。係數庫在 '+w5esc(w5rg(W5.site))+' '+facY(y)+' 年沒有這幾格，這些列的處理排放<b>先記 0</b>；系統不會用檔案裡自己填的係數。可以先匯入。請把這幾種向 <b>ESG</b> 反應，ESG 確認係數、加進係數庫之後，重新匯入這個檔才會算出來。</div>'; }
   if(B.needC.length){ const leftC=B.needC.filter(n=>!n.b||!n.w).length, red='outline:2px solid #c0392b;color:#a33';   /* V129-116：種類或處理方式對不到類別的，逐列選（比照下面的運輸工具） */
     h+='<div class="msg" style="border:2px solid #c0392b;background:#fdecea;color:#7a1f14">⚠ 下面 '+B.needC.length+' 列的「廢棄物種類」或「處理方式」系統對不到類別（例如只寫「貯存」，或寫法不在清單裡），請逐列選大類和處理方式'+(leftC?'，還差 <b>'+leftC+'</b> 列，選完才能匯入':'，都選好了')+'。系統不會替您歸到「其他」。處理方式要選最後怎麼處理掉，查不到請先問清運商。選一列會把同樣寫法、還沒選的列一起帶上（可再改）。</div>';
@@ -16286,8 +16365,9 @@ function wstImportPreview(){ const I=window._w5Imp, B=wstImportBuild(), y=W5.yea
   if(B.warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+B.warn.slice(0,12).map(x=>'・'+w5esc(x)).join('<br>')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　處理排放用系統係數庫（跟收集表的係數不同時會有差）；運輸用 C04／C09 共用運輸係數表（照「運輸工具」對車種）。</div>';
   const nLeft=B.need.filter(n=>!n.vp).length, nLeftC=B.needC.filter(n=>!n.b||!n.w).length;
+  { const NF=wstNofac(B); h=nofacHtml(NF,1)+h; window._w5NF=NF.length; }   /* V129-125 */
   h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
-  w5dlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstImportGo()"'+(!B.rows.length?impZeroAttr(0):(nLeft||nLeftC)?' disabled title="'+(nLeftC?'還有 '+nLeftC+' 列沒選大類或處理方式':'')+(nLeft&&nLeftC?'；':'')+(nLeft?'還有 '+nLeft+' 列沒選車種':'')+'"':'')+'>確認匯入</button>'); }
+  w5dlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstImportGo()"'+nofacAttr(window._w5NF)+(!B.rows.length?impZeroAttr(0):(nLeft||nLeftC)?' disabled title="'+(nLeftC?'還有 '+nLeftC+' 列沒選大類或處理方式':'')+(nLeft&&nLeftC?'；':'')+(nLeft?'還有 '+nLeft+' 列沒選車種':'')+'"':'')+'>確認匯入</button>'); }
 function wstImpCp(sel){ const I=window._w5Imp; if(!I)return; I.cpick=I.cpick||{}; const k=sel.dataset.ck, f=sel.dataset.cf, v0=sel.dataset.cv, v=sel.value, o=(I.cpick[k]=I.cpick[k]||{});   /* V129-116：同樣寫法、這一欄還沒選的列一起帶 */
   if(v){ o[f]=v; if(sel.dataset.auto!=='1')document.querySelectorAll('select[data-ck][data-cf="'+f+'"]').forEach(x=>{ if(x!==sel&&x.dataset.cv===v0){ const p=(I.cpick[x.dataset.ck]=I.cpick[x.dataset.ck]||{}); if(!p[f])p[f]=v; } }); } else delete o[f];
   wstImportPreview(); }
@@ -16296,9 +16376,11 @@ function wstImpVp(sel){ const I=window._w5Imp; if(!I)return; I.vpick=I.vpick||{}
   if(v){ I.vpick[k]=v; document.querySelectorAll('select[data-k][data-v]').forEach(s=>{ if(s!==sel&&s.dataset.v===v0&&!I.vpick[s.dataset.k])I.vpick[s.dataset.k]=v; }); } else delete I.vpick[k];
   wstImportPreview(); }
 window.wstImpVp=wstImpVp;
+function wstNofac(B){ return nofacOn(W5.year)?B.noLib.flatMap(x=>Array(x[1]).fill((w5codeNm(x[0])||x[0])+'（'+c5D(x[0])+'）｜'+w5rg(W5.site)+'｜'+facY(W5.year))):[]; }   /* V129-125 */
 async function wstImportGo(){ if(!w5canEdit())return;
   const B=wstImportBuild(); { const left=B.need.filter(n=>!n.vp).length; if(left){ alert('還有 '+left+' 列的運輸工具沒選車種，選完才能匯入。'); return; } }   /* V129-103 */
   { const leftC=B.needC.filter(n=>!n.b||!n.w).length; if(leftC){ alert('還有 '+leftC+' 列的廢棄物種類或處理方式沒選，選完才能匯入。'); return; } }   /* V129-116 */
+  if(wstNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */
   if(curGhgUser)B.rows.forEach(o=>{ o.created_by=curGhgUser.emp_id; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+B.rows.length+' 列）</div>';
   try{
