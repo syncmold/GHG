@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-129</b> · 2026/11/27</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-131</b> · 2026/11/27</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -2905,10 +2905,10 @@ function tplBook(key,site,year){ const T=TPLS[key]; const st=((typeof SITES!=='u
     .concat((T.how||[]).map(x=>[x])).concat([[],['分頁','欄位','要不要填','說明','範例']]);
   T.sheets.forEach(sh=>sh.cols.forEach(c=>info.push([sh.name,c[0],TPL_TIER[c[1]]||'',c[2]||'',c[3]==null?'':c[3]])));
   const LR=[];   /* 每一份清單在說明頁 B 欄的第幾列到第幾列（下拉選單指到這裡） */
-  (typeof T.lists==='function'?T.lists(site,year):(T.lists||[])).forEach(L=>{ info.push([]); info.push([L[0]]); const a=info.length+1; L[1].forEach(x=>info.push(['',x])); LR.push([a,info.length]); });   /* lists 可以是函式：清單要看廠區／年度的（例 金額法的係數類別＝那一年係數庫有的） */
+  (typeof T.lists==='function'?T.lists(site,year):(T.lists||[])).forEach(L=>{ info.push([]); info.push([L[0]]); const a=info.length+1; if(L[2]==='grid')L[1].forEach(r=>info.push([''].concat(r))); else L[1].forEach(x=>info.push(['',x])); LR.push([a,info.length,L[2]==='grid']); });   /* V129-131：grid＝連動下拉的對照（B 欄鍵、C 欄起選項） */   /* lists 可以是函式：清單要看廠區／年度的（例 金額法的係數類別＝那一年係數庫有的） */
   const sheets=T.sheets.map(sh=>({name:sh.name, n:sh.rows||0, aoa:[sh.cols.map(c=>TPL_TIER[c[1]]||''), sh.cols.map(c=>c[0])],
       w:sh.cols.map(c=>(c[5]&&c[5].w)||Math.max(9,Math.min(36,String(c[0]).length*2+3))),   /* V129-115：下拉選項比較長的欄可以指定欄寬（c[5].w），選單才看得到整句 */ f:sh.cols.map((c,i)=>c[4]?[i,c[4]]:null).filter(Boolean),
-      dv:sh.cols.map((c,i)=>{ const R=c[5]&&LR[c[5].l]; return (R&&R[1]>=R[0])?{c:i,a:R[0],b:R[1],stop:!!c[5].stop}:null; }).filter(Boolean)}));   /* 欄位第 6 格 {l:第幾份清單,stop:1}＝這一欄做成下拉選單 */
+      dv:sh.cols.map((c,i)=>{ const R=c[5]&&LR[c[5].l]; if(!(R&&R[1]>=R[0]))return null; const o={c:i,a:R[0],b:R[1],stop:!!c[5].stop}; const D=c[5].dep&&LR[c[5].dep.l]; if(D&&D[2]&&D[1]>=D[0])o.dep={a:D[0],b:D[1],c:c[5].dep.c}; return o; }).filter(Boolean)}));   /* V129-131：dep＝連動下拉 */   /* 欄位第 6 格 {l:第幾份清單,stop:1}＝這一欄做成下拉選單 */
   return {name:T.code+'樣板_'+site+'_'+year+'.xlsx', sheets:sheets, info:info}; }
 function tplWorkbook(key,site,year){ const B=tplBook(key,site,year), wb=XLSX.utils.book_new();
   B.sheets.forEach(sh=>{ const ws=XLSX.utils.aoa_to_sheet(sh.aoa); ws['!cols']=sh.w.map(x=>({wch:x}));
@@ -2919,13 +2919,17 @@ function tplWorkbook(key,site,year){ const B=tplBook(key,site,year), wb=XLSX.uti
   return {wb:wb,name:B.name,dv:B.sheets.map(sh=>sh.dv),rows:B.sheets.map(sh=>sh.n)}; }
 /* 活頁簿 → 檔案內容。有下拉選單的欄位：匯出元件不會寫「資料驗證」，所以產出後把那一段補進分頁的 XML（清單指到「樣板說明」頁 B 欄）。
    補不上（元件改版之類）就退回沒有下拉的版本，樣板照樣能用——清單在說明頁，照抄即可。 */
+/* V129-131：下拉選單的清單公式。dep＝連動：依同一列的某一欄（例 F 廢棄物種類）去「樣板說明」頁的對照表找那一列的選項；那一欄空白時列全部 */
+function tplDvF(d){ const S="'"+TPL_INFO+"'!", full=S+'$B$'+d.a+':$B$'+d.b; if(!d.dep)return full;
+  const k='$'+XLSX.utils.encode_col(d.dep.c)+'3', mt='MATCH('+k+','+S+'$B$'+d.dep.a+':$B$'+d.dep.b+',0)-1';
+  return 'IF('+k+'="",'+full+',OFFSET('+S+'$C$'+d.dep.a+','+mt+',0,1,MAX(1,COUNTA(OFFSET('+S+'$C$'+d.dep.a+','+mt+',0,1,12)))))'; }
 function tplBytes(W){ const arr=new Uint8Array(XLSX.write(W.wb,{type:'array',bookType:'xlsx'})); if(!(W.dv||[]).some(d=>d.length))return arr;
   try{ const z=XLSX.CFB.read(arr,{type:'array'}), td=new TextDecoder(), te=new TextEncoder(), X=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     W.dv.forEach((dv,i)=>{ if(!dv.length)return; const p='/xl/worksheets/sheet'+(i+1)+'.xml', f=XLSX.CFB.find(z,p); if(!f)throw new Error('找不到 '+p);
       let xml=td.decode(f.content instanceof Uint8Array?f.content:new Uint8Array(f.content)); if(xml.split('</sheetData>').length!==2||xml.indexOf('<dataValidations')>=0||xml.indexOf('<mergeCells')>=0)throw new Error('分頁結構跟預期不同');
       const last=Math.max(W.rows[i]||0,2000)+2;
       const x='<dataValidations count="'+dv.length+'">'+dv.map(d=>{ const col=XLSX.utils.encode_col(d.c);
-        return '<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorStyle="'+(d.stop?'stop':'warning')+'" errorTitle="'+X('請從下拉清單選')+'" error="'+X(d.stop?'這一欄請從下拉清單選一個（完整清單在「樣板說明」頁）。':'這個寫法不在清單裡，系統可能對不到係數。確定要用這個寫法嗎？')+'" sqref="'+col+'3:'+col+last+'"><formula1>'+X("'"+TPL_INFO+"'!$B$"+d.a+':$B$'+d.b)+'</formula1></dataValidation>'; }).join('')+'</dataValidations>';
+        return '<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorStyle="'+(d.stop?'stop':'warning')+'" errorTitle="'+X('請從下拉清單選')+'" error="'+X(d.stop?'這一欄請從下拉清單選一個（完整清單在「樣板說明」頁）。':'這個寫法不在清單裡，系統可能對不到係數。確定要用這個寫法嗎？')+'" sqref="'+col+'3:'+col+last+'"><formula1>'+X(tplDvF(d))+'</formula1></dataValidation>'; }).join('')+'</dataValidations>';
       XLSX.CFB.utils.cfb_add(z,p,te.encode(xml.replace('</sheetData>','</sheetData>'+x))); });
     try{ XLSX.CFB.utils.cfb_del(z,'/\u0001Sh33tJ5'); }catch(e){}
     const out=XLSX.CFB.write(z,{fileType:'zip',type:'array'}); XLSX.read(out,{type:'array',sheetRows:3});   /* 讀得回來才用 */
@@ -3032,11 +3036,12 @@ TPLS['C10']={code:'C10',name:'售出產品加工（委外加工・金額法）',
 function tplC05Lists(site,year){ const fy=facY(+year), bigs=Object.keys(W5BIG).filter(k=>k!=='Z').sort().concat(['Z']), have=[];   /* V129-116：新大類名稱、2026 起的處理方式；「其他」排最後 */
   bigs.forEach(b=>W5OPT.forEach(o=>{ if(w5lib('C05-'+b+o[0],site,year))have.push(W5BIG[b]+' ＋ '+o[1]); }));
   let TL=[]; try{ TL=w5trnItems(site); }catch(e){} if(!TL.length)throw new Error('運輸係數表還沒讀完，請等這一頁的表格出來後再按一次');   /* V127 */
+  const grid=bigs.map(b=>{ const ok=w5WayList(b,site,year).filter(x=>x.ok).map(x=>x.nm); return [W5BIG[b]].concat(ok.length?ok:['（係數庫沒有，請跟 ESG 小組反應）']); });   /* V129-131：連動下拉用 */
   return [['「廢棄物種類」下拉選單的選項（看廢棄物本身是哪一種）',bigs.map(b=>W5BIG[b])],['「處理方式」下拉選單的選項（最後怎麼處理掉；只寫「貯存」「分類」不算，查不到請先問清運商）',W5OPT.map(o=>o[1])],['「運輸工具」下拉選單的選項（清運車的車種，照噸數選；排前面的是本廠所在區域的車種。C4／C5／C9 運輸共用同一張係數表，在係數庫 C04 維護）',TL.map(x=>x.veh).filter((v,i,a)=>a.indexOf(v)===i)],
-    ['這個廠區 '+fy+' 年版係數庫有處理係數的組合（種類 ＋ 處理方式）。不在這裡的組合系統對不到係數，'+(nofacOn(year)?'不能匯入；請向 ESG 反應，ESG 補上係數後再匯入':'處理排放會先記 0；請向 ESG 反應，ESG 確認係數後會加進係數庫'),have.length?have:['（係數庫目前沒有這個廠區這一年的處理係數）']]]; }
+    ['這個廠區 '+fy+' 年版係數庫有處理係數的組合（種類 ＋ 處理方式）。不在這裡的組合系統對不到係數，'+(nofacOn(year)?'不能匯入；請向 ESG 反應，ESG 補上係數後再匯入':'處理排放會先記 0；請向 ESG 反應，ESG 確認係數後會加進係數庫'),have.length?have:['（係數庫目前沒有這個廠區這一年的處理係數）']]].concat(nofacOn(year)?[['「處理方式」連動下拉用（先選廢棄物種類，處理方式只出現同一列的選項；這一份請不要改）',grid,'grid']]:[]); }
 TPLS['C05']={code:'C05',name:'營運廢棄物',lists:tplC05Lists,how:[
   '1. 一次清運填一列（同一種廢棄物、同一種處理方式、同一家清運商，也可以一個月合成一列）。第 1 列寫「必填」的一定要填。第 1、2 列與分頁名稱請不要改。',
-  '2. 「廢棄物種類」「處理方式」用下拉選單選（不在清單的字 Excel 會擋），系統用這兩欄帶處理係數。處理方式要填最後怎麼處理掉，只寫「貯存」不算。這個廠區哪些組合有係數，列在這一頁最下面。',
+  '2. 「廢棄物種類」「處理方式」用下拉選單選（不在清單的字 Excel 會擋），系統用這兩欄帶處理係數。處理方式要填最後怎麼處理掉，只寫「貯存」不算。這個廠區哪些組合有係數，列在這一頁最下面。2026 年起請先選廢棄物種類，處理方式的下拉只會出現這個廠區有係數的；清單沒有的處理方式，請跟 ESG 小組反應。',
   '3. 重量請填公噸（公斤 ÷ 1000）。',
   '4. 運輸：要算清運車的運輸排放才填「運輸距離」，並用下拉選單選「運輸工具」（清運車的車種，照噸數選）。「延噸公里」有公式自動算（重量 × 距離）。運輸排放＝延噸公里 × 運輸係數，係數由系統照車種帶（跟 C04／C09 運輸用同一張係數表），不用自己填。',
   '5. 填好回系統「資料登錄 › C05 營運廢棄物」，選好跟樣板一樣的廠區與年度，按「📥 匯入收集表」選這個檔。會先預覽，按確認才寫入。',
@@ -3044,7 +3049,7 @@ TPLS['C05']={code:'C05',name:'營運廢棄物',lists:tplC05Lists,how:[
  sheets:[{name:'C5 營運廢棄物',rows:500,cond:[['運輸距離(KM)','運輸工具']],
   cols:[['序號','O','流水號','1'],['公司','S','清運或處理廠商的名稱','○○環保'],['廠房或辦公室名稱','O','','台北總公司'],['清運日期','O','西元年/月/日；整個月合成一列就填那個月的任一天','2026/03/15'],['廢棄物代號','O','環保署廢棄物代碼，有才填','D-1801'],
    ['廢棄物種類','R','下拉選單選一種','一般生活廢棄物',null,{l:0,stop:1}],['廢棄物(資源品)名稱','O','','一般生活垃圾'],['廢棄物(資源品)重量(公噸)','R','公噸（公斤 ÷ 1000）','1.25'],['支出費用','O','清運處理費，當地幣','3500'],
-   ['處理方式','R','下拉選單選一種：最後怎麼處理掉','燃燒',null,{l:1,stop:1}],['佐證資料編碼','O','清運單或收據的編號','W-001'],['處理地點','S','處理廠的名稱或地點','新店焚化廠'],
+   ['處理方式','R','下拉選單選一種：最後怎麼處理掉（2026 年起先選廢棄物種類，這裡只出現這個廠區有係數的處理方式）','燃燒',null,{l:1,stop:1,dep:{l:4,c:5}}],   /* V129-131 */['佐證資料編碼','O','清運單或收據的編號','W-001'],['處理地點','S','處理廠的名稱或地點','新店焚化廠'],
    ['運輸距離(KM)','S','要算運輸排放才填：廠區到處理地點的公里數','18.5'],['延噸公里(T.KM)','A','公式自動算（重量 × 運輸距離），也可以直接打數字','23.125',r=>'IF(OR(H'+r+'="",M'+r+'=""),"",H'+r+'*M'+r+')'],
    ['運輸工具','C','有填運輸距離就要選（下拉選單：清運車的車種，照噸數）','營業大貨車(柴油)',null,{l:2}],['使用燃料','O','','柴油'],['備註','O','','']]}]};
 
@@ -11519,6 +11524,26 @@ window.c5D=c5D; window.c5Avg=c5Avg;
 function w5codeNm(code){ const m=String(code||'').match(/^C05-([A-Z])(\d\d-\d\d)$/); return m?(W5BIG[m[1]]||m[1])+'·'+w5optNm(m[2]):''; }
 /* 查處理係數：代號 × 區域 × 年度。先找本廠所在區域的條目，沒有才用全區共用（ALL）；2026 起的年度（含 2099 試打），舊兩段代號先對照成新代號再查。2025 以前照原代號查，結果跟以前一樣。 */
 function w5lib(code,site,year){ if(!W5.fac||!code)return null; const rg=w5rg(site), fy=facY(year), tr=c=>W5.fac[c+'|'+rg+'|'+fy]||W5.fac[c+'|ALL|'+fy]||null; let L=tr(code); if(!L&&fy>=2026){ const n=w5new(code); if(n&&n!==code)L=tr(n); } return L; }
+/* V129-131：處理方式下拉照係數庫（使用者 261127「那下拉應該要按處理方式提供選項」「這個沒有防呆」「可以，照這樣做」）
+   第 1 層＝這個大類該年（facY）在係數庫任何區域有條目的處理方式才列；第 2 層＝本廠區域（或 ALL）有係數的才能選，其他反灰。2025 以前照舊全部列。 */
+function w5WayAny(code,year){ if(!W5.fac||!code)return false; const t='|'+facY(year); return Object.keys(W5.fac).some(k=>k.indexOf(code+'|')===0&&k.slice(-t.length)===t); }
+function w5WayList(big,site,year){
+  if(!nofacOn(year)||!W5.fac)return W5OPT.map(o=>({w:o[0],nm:o[1],ok:true,lib:null}));
+  if(!big)return [];
+  return W5OPT.map(o=>{ const c='C05-'+big+o[0]; if(!w5WayAny(c,year))return null; const lib=w5lib(c,site,year); return {w:o[0],nm:o[1],ok:!!lib,lib:lib}; }).filter(Boolean); }
+function w5WayOptsHtml(big,site,year,sel,withCode){
+  const nmOf=x=>(withCode?x.w+' ':'')+w5esc(x.nm);
+  if(!nofacOn(year)||!W5.fac)return W5OPT.map(o=>'<option value="'+o[0]+'"'+(o[0]===sel?' selected':'')+'>'+(withCode?o[0]+' ':'')+w5esc(o[1])+'</option>').join('');
+  if(!big)return '<option value="" disabled>（先選大類）</option>';
+  const L=w5WayList(big,site,year), ok=L.filter(x=>x.ok), no=L.filter(x=>!x.ok), rg=w5rg(site), fy=facY(year);
+  let h='';
+  if(sel&&!ok.some(x=>x.w===sel))h+='<option value="'+w5esc(sel)+'" selected disabled>'+w5esc(w5optNm(sel))+'（這個大類不能選，請重選）</option>';
+  if(ok.length)h+='<optgroup label="可以選（係數庫有）">'+ok.map(x=>'<option value="'+x.w+'"'+(x.w===sel?' selected':'')+'>'+nmOf(x)+'</option>').join('')+'</optgroup>';
+  else h+='<option value="" disabled'+(sel?'':' selected')+'>（這個大類在 '+rg+' '+fy+' 年係數庫還沒有任何處理方式，請跟 ESG 小組反應）</option>';
+  if(no.length)h+='<optgroup label="係數庫沒有（不能選）">'+no.map(x=>'<option value="'+x.w+'" disabled>'+nmOf(x)+'　— '+rg+' '+fy+' 係數庫沒有，請跟 ESG 小組反應</option>').join('')+'</optgroup>';
+  h+='<option value="" disabled>（清單沒有的處理方式，請跟 ESG 小組反應）</option>';
+  return h; }
+window.w5WayList=w5WayList; window.w5WayOptsHtml=w5WayOptsHtml; window.w5WayAny=w5WayAny;
 const W5RG={'SY':'TW','SH':'TW','GT':'TW','LH':'TW','VN':'VN','LT':'TH','TH':'TH'};
 function w5esc(v){ return String(v==null?'':(typeof v==='object'?JSON.stringify(v):v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function w5dlg(title,body,foot){   /* 原頁面的 dlg 是區域函式，這裡自己組一個同樣外觀的 */
@@ -12019,14 +12044,17 @@ function wstAdd(big,way,kindName){
     const opt=o=>Object.keys(o).sort().map(k=>'<option value="'+k+'">'+k+' '+w5esc(o[k])+'</option>').join('');
     let h='<div class="row" style="gap:10px;flex-wrap:wrap">'
       +'<div class="fld"><label>廢棄物大類 *</label><select id="w5a_big">'+opt(W5BIG)+'</select></div>'
-      +'<div class="fld"><label>處理方式 *（最後怎麼處理掉）</label><select id="w5a_way">'+W5OPT.map(o=>'<option value="'+o[0]+'">'+o[0]+' '+w5esc(o[1])+'</option>').join('')+'</select></div>'
+      +'<div class="fld"><label>處理方式 *（最後怎麼處理掉）</label><select id="w5a_way"></select></div>'   /* V129-131：選項照大類與係數庫（w5WayOptsHtml） */
       +'<div class="fld" style="max-width:220px"><label>種類名稱（照收集表寫法·選填）</label><input id="w5a_nm" placeholder="例 生活垃圾／危险废物"></div>'
       +'</div><div id="w5a_hint" class="fmini" style="margin-top:6px"></div>';
     w5dlg('＋ 新增清運', h, '<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstAddGo()">加一列</button>');
-    setTimeout(()=>{ const f=()=>{ const b=document.getElementById('w5a_big').value, w=document.getElementById('w5a_way').value;
-        const lib=w5lib('C05-'+b+w,W5.site,W5.year);
+    setTimeout(()=>{ const bs=document.getElementById('w5a_big'), ws=document.getElementById('w5a_way'), addB=document.querySelector('#s101dlg .foot button.pri');
+      const fill=()=>{ const okW=w5WayList(bs.value,W5.site,W5.year).filter(x=>x.ok).map(x=>x.w), cur=okW.indexOf(ws.value)>=0?ws.value:''; ws.innerHTML=w5WayOptsHtml(bs.value,W5.site,W5.year,cur,true); const so=ws.options[ws.selectedIndex]; if(!so||so.disabled){ const first=[...ws.options].find(o=>!o.disabled&&o.value); ws.value=first?first.value:''; } };   /* V129-131：換大類時舊的選擇不帶進新清單（測試頁實測：會殘留「這個大類不能選」那一項） */
+      const f=()=>{ const b=bs.value, w=ws.value;
+        if(nofacOn(W5.year)&&!w){ document.getElementById('w5a_hint').innerHTML='<span style="color:#b8860b">「'+w5esc(W5BIG[b]||b)+'」在 '+w5esc(w5rg(W5.site))+' '+facY(W5.year)+' 年係數庫還沒有任何處理方式的係數，不能新增。請跟 ESG 小組反應，ESG 補上係數後再新增。</span>'; if(addB)addB.disabled=true; return; }   /* V129-131 */
+        const lib=w5lib('C05-'+b+w,W5.site,W5.year); if(addB)addB.disabled=!!(nofacOn(W5.year)&&!lib);   /* V129-131：沒係數不能按「加一列」 */
         document.getElementById('w5a_hint').innerHTML=lib?('係數庫會自動帶：<b>'+w5f(lib.v,10)+' kgCO2e/t</b>（代號 '+c5D('C05-'+b+w)+'·'+lib.rg+'·'+facY(W5.year)+'）'+(c5Avg(lib.note)?'　這一條是處置平均（不分處理方式用同一個值）':'')+(lib.why?'　選用原因：'+w5esc(lib.why):'')+(lib.auth?'　出處：'+w5esc(lib.auth):'　<span style="color:#b8860b">出處待 ESG 確認</span>')):'<span style="color:#b8860b">係數庫目前沒有「'+W5BIG[b]+'·'+w5optNm(w)+'」在 '+w5rg(W5.site)+' '+facY(W5.year)+' 年的條目，'+(nofacOn(W5.year)?'加了也不能儲存。請跟 ESG 小組反應，ESG 補上係數後再新增。':'處理排放會先記 0。請向 ESG 反應，ESG 確認係數後會加進係數庫。')+'</span>';   /* V129-126 */ };
-      document.getElementById('w5a_big').onchange=f; document.getElementById('w5a_way').onchange=f; f(); },30);
+      bs.onchange=()=>{ fill(); f(); }; ws.onchange=f; fill(); f(); },30);   /* V129-131 */
     return;
   }
   const lib=w5lib('C05-'+big+way,W5.site,W5.year);
@@ -12044,6 +12072,7 @@ function wstAdd(big,way,kindName){
 function wstAddGo(){
   const b=document.getElementById('w5a_big'), w=document.getElementById('w5a_way'), n=document.getElementById('w5a_nm');
   if(!b||!w)return;
+  if(nofacOn(W5.year)&&(!w.value||!w5lib('C05-'+b.value+w.value,W5.site,W5.year)))return;   /* V129-131：防呆（按鈕已停用，再擋一次） */
   wstAdd(b.value, w.value, (n&&n.value.trim())||'');
 }
 /* ── 儲存 ── */
@@ -16350,12 +16379,12 @@ function wstImportPreview(){ const I=window._w5Imp, B=wstImportBuild(), y=W5.yea
   if(B.noLib.length&&!nofacOn(y)){   /* V129-116：對不到係數的，紅框警示、請填表的人找 ESG；可以先匯入，處理排放記 0（V129-125：2026 起改成擋下，見下面） */
     h+='<div class="msg" style="border:2px solid #c0392b;background:#fdecea;color:#7a1f14">⚠ 有 '+B.noLib.reduce((a,x)=>a+x[1],0)+' 列<b>對不到係數庫的係數</b>：'+B.noLib.map(x=>'<b>'+w5esc(w5codeNm(x[0])||x[0])+'</b>（'+w5esc(c5D(x[0]))+'，'+x[1]+' 列）').join('、')+'。係數庫在 '+w5esc(w5rg(W5.site))+' '+facY(y)+' 年沒有這幾格，這些列的處理排放<b>先記 0</b>；系統不會用檔案裡自己填的係數。可以先匯入。請把這幾種向 <b>ESG</b> 反應，ESG 確認係數、加進係數庫之後，重新匯入這個檔才會算出來。</div>'; }
   if(B.needC.length){ const leftC=B.needC.filter(n=>!n.b||!n.w).length, red='outline:2px solid #c0392b;color:#a33';   /* V129-116：種類或處理方式對不到類別的，逐列選（比照下面的運輸工具） */
-    h+='<div class="msg" style="border:2px solid #c0392b;background:#fdecea;color:#7a1f14">⚠ 下面 '+B.needC.length+' 列的「廢棄物種類」或「處理方式」系統對不到類別（例如只寫「貯存」，或寫法不在清單裡），請逐列選大類和處理方式'+(leftC?'，還差 <b>'+leftC+'</b> 列，選完才能匯入':'，都選好了')+'。系統不會替您歸到「其他」。處理方式要選最後怎麼處理掉，查不到請先問清運商。選一列會把同樣寫法、還沒選的列一起帶上（可再改）。</div>';
+    h+='<div class="msg" style="border:2px solid #d48a00;background:#fff6e0;color:#6b4600;text-align:left;line-height:1.7">⚠ 下面 '+B.needC.length+' 列資料還沒填完整：「廢棄物種類」或「處理方式」系統對不到類別（例如只寫「貯存」，或寫法不在清單裡），請逐列選大類和處理方式'+(leftC?'，還差 <b>'+leftC+'</b> 列，選完才能匯入':'，都選好了')+'（不用找 ESG）。系統不會替您歸到「其他」。處理方式要選最後怎麼處理掉，查不到請先問清運商。選一列會把同樣寫法、還沒選的列一起帶上（可再改）。</div>';
     h+='<table class="wtbl" style="width:100%;table-layout:fixed;font-size:12px;margin:4px 0 8px"><colgroup><col style="width:70px"><col><col style="width:74px"><col style="width:176px"><col style="width:204px"></colgroup><thead><tr><th class="tl" style="text-align:left;white-space:normal">分頁·列</th><th class="tl" style="text-align:left;white-space:normal">收集表的種類／名稱</th><th class="tl" style="text-align:left;white-space:normal">收集表的處理方式</th><th class="tl" style="text-align:left;white-space:normal">選大類</th><th class="tl" style="text-align:left;white-space:normal">選處理方式</th></tr></thead><tbody>'
       +B.needC.map(n=>{ const ak=' data-ck="'+w5esc(n.k)+'"', cvB=' data-cv="'+w5esc(n.kind+'|'+n.nm)+'"', cvW=' data-cv="'+w5esc(n.way)+'"';   /* 同樣寫法：大類看「種類＋名稱」、處理方式看「處理方式」那一格 */
         return '<tr><td class="tl" style="text-align:left;white-space:normal" title="'+w5esc(n.sheet)+'">'+w5esc(n.sheet.replace(/^C5 ?(營運廢棄物|营运废弃物)-?/,''))+' 第 '+n.r+' 列</td><td class="tl" style="text-align:left;white-space:normal">'+w5esc(n.kind||'（空白）')+(n.nm?'<div class="fmini">'+w5esc(n.nm)+'</div>':'')+'</td><td class="tl" style="text-align:left;white-space:normal">'+w5esc(n.way||'（空白）')+'</td>'
           +'<td class="tl" style="text-align:left"><select onchange="wstImpCp(this)" data-cf="b" data-auto="'+(n.b0?1:0)+'"'+ak+cvB+' style="width:100%;'+(n.b?'':red)+'"><option value="">（選大類）</option>'+Object.keys(W5BIG).sort().map(k=>'<option value="'+k+'"'+(k===n.b?' selected':'')+'>'+k+' '+w5esc(W5BIG[k])+'</option>').join('')+'</select></td>'
-          +'<td class="tl" style="text-align:left"><select onchange="wstImpCp(this)" data-cf="w" data-auto="'+(n.w0?1:0)+'"'+ak+cvW+' style="width:100%;'+(n.w?'':red)+'"><option value="">（選處理方式）</option>'+W5OPT.map(o=>'<option value="'+o[0]+'"'+(o[0]===n.w?' selected':'')+'>'+w5esc(o[1])+'</option>').join('')+'</select></td></tr>'; }).join('')+'</tbody></table>'; }
+          +'<td class="tl" style="text-align:left"><select onchange="wstImpCp(this)" data-cf="w" data-auto="'+(n.w0?1:0)+'"'+ak+cvW+' style="width:100%;'+(n.w?'':red)+'"><option value="">（選處理方式）</option>'+w5WayOptsHtml(n.b,W5.site,W5.year,n.w,false)+'</select></td></tr>'   /* V129-131 */; }).join('')+'</tbody></table>'; }
   if(B.need.length){ const L=w5trnItems(), rgx=w5trnRg(), ZH={CN:'中國',ALL:'全球',TW:'台灣'}, left=B.need.filter(n=>!n.vp).length;   /* V129-103：看不出噸級的逐列選車種 */
     h+='<div class="msg" style="border:2px solid #c0392b;background:#fdecea;color:#7a1f14">⚠ 下面 '+B.need.length+' 列的運輸工具看不出噸級（例如只寫「貨車」），請逐列選車種'+(left?'，還差 <b>'+left+'</b> 列，選完才能匯入':'，都選好了')+'。選一列會把同樣寫法、還沒選的列一起帶上（可再改）。</div>';
     h+='<table class="wtbl" style="width:100%;font-size:12px;margin:4px 0 8px"><thead><tr><th class="tl">分頁·列</th><th class="tl">廢棄物</th><th class="tl">處理地點</th><th class="tl">收集表寫</th><th class="tl">選車種</th></tr></thead><tbody>'
@@ -16367,9 +16396,10 @@ function wstImportPreview(){ const I=window._w5Imp, B=wstImportBuild(), y=W5.yea
   if(B.warn.length)h+='<div class="msg" style="background:#fff8e6;border:1px solid #f0d9a0;color:#7a5a00;font-size:12px">'+B.warn.slice(0,12).map(x=>'・'+w5esc(x)).join('<br>')+'</div>';
   h+=impYrWarn()+'<div class="fmini" style="margin-top:6px">'+(exist?'<div class="impwarn">⚠ 這次的內容全部寫入成功後，才會刪掉這個廠年原本由「登錄頁／匯入收集表」寫入的 '+exist+' 列；寫入中途失敗會自動收回，原本的不會動。</div>':'這個廠年目前沒有登錄頁／匯入的資料。')+(other?'　另有 '+other+' 列是批次收割的資料，不會動。':'')+'　處理排放用系統係數庫（跟收集表的係數不同時會有差）；運輸用 C04／C09 共用運輸係數表（照「運輸工具」對車種）。</div>';
   const nLeft=B.need.filter(n=>!n.vp).length, nLeftC=B.needC.filter(n=>!n.b||!n.w).length;
-  { const NF=wstNofac(B); h=nofacHtml(NF,1)+h; window._w5NF=NF.length; }   /* V129-125 */
+  { const NF=wstNofac(B); h=nofacHtml(NF,1)+h; window._w5NF=NF.length; }
+  { const IN=wst5Inc(B); h=incHtml(IN,1)+h; window._w5IN=IN.length; }   /* V129-131 */   /* V129-125 */
   h=impZeroMsg(B.rows.length)+h;   /* V129-119 */
-  w5dlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstImportGo()"'+nofacAttr(window._w5NF)+(!B.rows.length?impZeroAttr(0):(nLeft||nLeftC)?' disabled title="'+(nLeftC?'還有 '+nLeftC+' 列沒選大類或處理方式':'')+(nLeft&&nLeftC?'；':'')+(nLeft?'還有 '+nLeft+' 列沒選車種':'')+'"':'')+'>確認匯入</button>'); }
+  w5dlg('📥 匯入收集表・預覽',h,'<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstImportGo()"'+nofacAttr(window._w5NF)+incAttr(window._w5IN)+(!B.rows.length?impZeroAttr(0):(nLeft||nLeftC)?' disabled title="'+(nLeftC?'還有 '+nLeftC+' 列沒選大類或處理方式':'')+(nLeft&&nLeftC?'；':'')+(nLeft?'還有 '+nLeft+' 列沒選車種':'')+'"':'')+'>確認匯入</button>'); }
 function wstImpCp(sel){ const I=window._w5Imp; if(!I)return; I.cpick=I.cpick||{}; const k=sel.dataset.ck, f=sel.dataset.cf, v0=sel.dataset.cv, v=sel.value, o=(I.cpick[k]=I.cpick[k]||{});   /* V129-116：同樣寫法、這一欄還沒選的列一起帶 */
   if(v){ o[f]=v; if(sel.dataset.auto!=='1')document.querySelectorAll('select[data-ck][data-cf="'+f+'"]').forEach(x=>{ if(x!==sel&&x.dataset.cv===v0){ const p=(I.cpick[x.dataset.ck]=I.cpick[x.dataset.ck]||{}); if(!p[f])p[f]=v; } }); } else delete o[f];
   wstImportPreview(); }
@@ -16378,10 +16408,12 @@ function wstImpVp(sel){ const I=window._w5Imp; if(!I)return; I.vpick=I.vpick||{}
   if(v){ I.vpick[k]=v; document.querySelectorAll('select[data-k][data-v]').forEach(s=>{ if(s!==sel&&s.dataset.v===v0&&!I.vpick[s.dataset.k])I.vpick[s.dataset.k]=v; }); } else delete I.vpick[k];
   wstImportPreview(); }
 window.wstImpVp=wstImpVp;
-function wstNofac(B){ return nofacOn(W5.year)?B.noLib.flatMap(x=>Array(x[1]).fill((w5codeNm(x[0])||x[0])+'（'+c5D(x[0])+'）｜'+w5rg(W5.site)+'｜'+facY(W5.year))):[]; }   /* V129-125 */
+function wst5Inc(B){ return nofacOn(W5.year)?B.noLib.filter(x=>!w5WayAny(x[0],W5.year)).flatMap(x=>Array(x[1]).fill('「'+(w5codeNm(x[0])||x[0])+'」：這個大類不能用這種處理方式，請在收集表改處理方式')):[]; }   /* V129-131：第 1 層沒有＝填錯，不是係數庫缺 */
+function wstNofac(B){ return nofacOn(W5.year)?B.noLib.filter(x=>w5WayAny(x[0],W5.year)).flatMap(x=>Array(x[1]).fill((w5codeNm(x[0])||x[0])+'（'+c5D(x[0])+'）｜'+w5rg(W5.site)+'｜'+facY(W5.year))):[]; }   /* V129-125 */
 async function wstImportGo(){ if(!w5canEdit())return;
   const B=wstImportBuild(); { const left=B.need.filter(n=>!n.vp).length; if(left){ alert('還有 '+left+' 列的運輸工具沒選車種，選完才能匯入。'); return; } }   /* V129-103 */
   { const leftC=B.needC.filter(n=>!n.b||!n.w).length; if(leftC){ alert('還有 '+leftC+' 列的廢棄物種類或處理方式沒選，選完才能匯入。'); return; } }   /* V129-116 */
+  if(wst5Inc(B).length){ alert('這個檔案有幾列資料還沒填完整（預覽黃框列的那幾列），整份不能匯入（原本的資料不會動）。請在收集表補好再匯入（不用找 ESG）。'); return; }   /* V129-131 */
   if(wstNofac(B).length){ alert('係數庫沒有這個檔案裡幾項的係數，這個檔案整份不能匯入（原本的資料不會動）。'+NOFAC_ESG); return; }   /* V129-125 */
   if(curGhgUser)B.rows.forEach(o=>{ o.created_by=curGhgUser.emp_id; });
   const box=document.getElementById('s101list'); if(box)box.innerHTML='<div class="msg">匯入中…（成功後才刪原本的登錄頁／匯入列；寫入 '+B.rows.length+' 列）</div>';
