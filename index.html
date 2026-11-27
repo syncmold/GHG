@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-131</b> · 2026/11/27</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-132</b> · 2026/11/27</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -5560,7 +5560,8 @@ function facC05Render(code){
         tr.dataset.c5=[S.key].concat(olds).join('|');
         const src=f0?(note(f0,'主值出處')||f0.factor_source||''):'', why=f0?note(f0,'選用原因'):'';
         pend=(src||why)?'<tr class="c5src"'+(window.FC5SRC?'':' style="display:none"')+'><td colspan="'+NC+'" style="text-align:left;white-space:normal;font-size:11.5px;line-height:1.55;color:#4a5f55;padding:2px 10px 7px 26px;border-bottom:1px solid #cfe0d6">'+(src?'<b>出處</b>：'+facEsc(src):'')+(src&&why?'<br>':'')+(why?'<span style="color:#8a5a00"><b>選用原因</b>：'+facEsc(why)+'</span>':'')+'</td></tr>':'';   /* 使用者 261125「沒有滑移的功能，看不到全部內容」：年度展開後放不下出處、選用原因兩欄（表格區只有約 940 寬），改成每一列下面一行、全文直接看得到，不用左右捲 */
-        tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace">'+(oldTxt?facEsc(oldTxt):'<span style="color:#9aa">—</span>')+'</td>');
+        { const same=!S.isOld&&oldTxt&&oldTxt===c5D(S.key).replace(/^C05-/,''); if(same||!oldTxt)oldTxt=''; }   /* V129-132：舊代號跟新代號一樣（只差前面 C05-）就不重複寫；沒有併入的舊代號也留空白（使用者 261127「照建議改」） */
+        tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace" title="'+(oldTxt?'2025 以前用的兩段代號，併到這一列一起看':'')+'">'+(oldTxt?facEsc(oldTxt):'')+'</td>');
       } else { if(S.mergeNote)tr.querySelectorAll('span').forEach(x=>{ if(/^×\d+$/.test(x.textContent.trim()))x.remove(); });   /* V129-124 */ { const tw=document.createTreeWalker(tr,NodeFilter.SHOW_TEXT); let tn; while((tn=tw.nextNode()))tn.nodeValue=c5D(tn.nodeValue); }   /* V129-121：明細裡的係數代號也不顯示 -01 */ const c0=tr.cells[0]; if(c0)c0.colSpan=3; [...tr.cells].forEach(c=>{ c.style.whiteSpace='normal'; c.style.wordBreak='break-all'; }); tr.querySelectorAll('span').forEach(x=>{ if(x.style.whiteSpace==='nowrap')x.style.whiteSpace='normal'; });   /* 年度欄比原本窄，明細裡的代號與 10 位數字要能換行，不然會疊在一起 */ tr.insertAdjacentHTML('beforeend','<td></td>'); }
       body+=tr.outerHTML; });
     body+=pend;
@@ -5575,14 +5576,14 @@ function facC05Render(code){
   mx+='</tbody></table>';
   const r=ncRow(code), title=r?ncLabel(code,null):facEsc(code), mAll={facs:all};
   let h='<div class="ftitle" style="margin-bottom:2px">'+title+'<span class="fmini" style="margin-left:8px">係數（大類 × 處理方式 × 區域 × 年度）·唯讀</span></div>'
-    +'<div class="msg" style="background:#fff6dc;border:1px solid #f0cf7a;border-left:6px solid #d99a00;font-size:14px;margin:6px 0 8px;padding:8px 12px;line-height:1.6">🔗 <b style="color:#7a4f00">這一頁是「處理」的係數；清運車的運輸係數不在這裡</b>——C4／C5／C9 共用同一張運輸係數表，在「C04 上游運輸」維護。<br>代號＝C05-〔大類〕〔處理方式〕-〔小分類〕（例 C05-E07-03 汙水廢水·汙水處理（金屬酸洗廢水））。系統查係數先找廠區所在區域的條目，沒有才用 ALL（全區域通用）。2025 以前用的兩段代號（例 C05-E10）列在最右邊「舊代號」欄；已申報年度的資料與數值都沒有改，只是排到新代號這一列一起看。</div>'
+    +'<div class="msg" style="background:#fff6dc;border:1px solid #f0cf7a;border-left:6px solid #d99a00;font-size:14px;margin:6px 0 8px;padding:8px 12px;line-height:1.6">🔗 <b style="color:#7a4f00">這一頁是「處理」的係數；清運車的運輸係數不在這裡</b>——C4／C5／C9 共用同一張運輸係數表，在「C04 上游運輸」維護。<br>代號＝C05-〔大類〕〔處理方式〕-〔小分類〕（例 C05-E07-03 汙水廢水·汙水處理（金屬酸洗廢水））。系統查係數先找廠區所在區域的條目，沒有才用 ALL（全區域通用）。2025 以前用的兩段代號併到新代號的（例 C05-E10 併進 C05-E07-03），列在最右邊「併入的舊代號」欄，跟新代號一樣的不重複寫；已申報年度的資料與數值都沒有改，只是排到新代號這一列一起看。</div>'
     +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:12px 0 4px">一、代號總表（大類 × 處理方式）<span class="fmini" style="font-weight:400;margin-left:8px">'+maxY+' 年係數庫有條目的代號；點代號跳到下面那一列</span></div>'+mx
     +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）'+' <button type="button" class="sec fc5srcT" onclick="fc5SrcTog(event)" title="每一列下面那一行出處與選用原因：全部顯示或摺起（點一列 ▸ 展開時，那一列的也會一起打開）" style="font-size:12px;padding:3px 10px;margin-left:6px">'+(window.FC5SRC?'出處·選用原因：摺起':'出處·選用原因：顯示')+'</button>'+((typeof facC05AddCan==='function'&&facC05AddCan())?' <button type="button" class="sec" onclick="facC05AddOpen()" title="新增一條營運廢棄物的係數條目（只有系統管理看得到；新條目是「待確認」）" style="margin-left:12px;font-size:12.5px;font-weight:700;padding:2px 12px">＋ 新增係數條目</button>':'')+'</div>'
     +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px;line-height:1.65">一列＝一個代號在一個區域；年度欄是那一年的<b>合成當量</b>（kgCO₂e／公噸；尾數的 0 不顯示，滑鼠停在數字上或展開明細看完整 10 位），空白（—）＝那一年係數庫沒有這一條。點一列（▸）展開明細（各年係數代號、適用廠區、來源），表頭可以「全部展開」。🟡＝跟前一年不同。每一列的出處與選用原因（取最後一個年度那一條的備註）預設摺起；點一列（▸）展開時會一起打開，標題旁「出處·選用原因：顯示」按鈕可以全部打開。</div>';
   h+='<table class="fsm fsfit" style="width:100%;min-width:'+(100+117+108+(YS.length+1)*96+36)+'px;table-layout:fixed;font-size:12.5px"><colgroup><col style="width:100px"><col style="width:117px"><col style="width:108px">'+YS.map(()=>'<col>').join('')+'<col style="width:80px"></colgroup>'
     +'<thead><tr><th style="text-align:left">代號<a href="javascript:void(0)" class="fsmall" onclick="fsmAll(event)" title="展開或收起每一列的明細" style="font-weight:400;font-size:11px;margin-left:6px;color:inherit;text-decoration:underline">'+(FSM_ALL?'全部收合':'全部展開')+'</a></th><th style="text-align:left">處理方式</th><th style="text-align:left">區域</th>'
     +YS.map(y=>'<th style="text-align:right">'+y+((typeof frevHdr==='function')?frevHdr(mAll,y):'')+'</th>').join('')
-    +'<th style="text-align:left">舊代號</th></tr></thead><tbody>'+body+'</tbody></table>'
+    +'<th style="text-align:left;white-space:nowrap" title="2025 以前用的兩段代號；跟新代號一樣的不重複寫">併入的舊代號</th></tr></thead><tbody>'+body+'</tbody></table>'   /* V129-132 */
     +'<div style="font-size:11px;color:var(--g);padding:8px 2px">挑係數的規則與資料登錄相同：依年度、廠區所在區域與代號自動判定。排法照「C05 代號與係數總表」定案（261123），年度欄展開（261125）。</div>';
   return h;
 }
