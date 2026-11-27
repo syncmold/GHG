@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-123</b> · 2026/11/26</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-124</b> · 2026/11/26</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -3752,6 +3752,7 @@ function facSrcRender(m,o){
         const one=f=>{ const a=efF(f), z=efT(f); const gv=(FGAS&&FGAS[f.factor_id])||[]; const eq=facEntEq(gv);   /* V121-2：計算用規則 */
           return f.factor_id+'：'+gv.map(g=>g.gas_code).join('＋')+' 合成 '+eq.toFixed(10)+((a!=null&&(z==null||z>a))?'（舊做法：'+a+'～'+(z==null?'':z)+' 共用這一筆）':''); };
         const tip='這一格底下的係數庫條目：\n'+fs.map(one).join('\n')+(y===m.openY?'\n（開帳預覽：沿用 '+last+' 的值，開帳後是新年度的代號）':'');
+        if(m.c5merge&&fs.length>1)return fs.slice().sort((p,q)=>FSM_RGORD(rgOf(p))-FSM_RGORD(rgOf(q))).map(f=>'<div title="'+facEsc(tip)+'" style="white-space:nowrap">'+facEsc(kb+'·'+rgOf(f)+'·'+y)+'</div>').join('');   /* V129-124：營運廢棄物併列（不同國家同值），列出各國條目，不標同年多筆 */
         return '<span title="'+facEsc(tip)+'" style="white-space:nowrap">'+facEsc(kb+'·'+(fs.length?rgOf(fs[0]):b.rg)+'·'+y)+'</span>'
           +(fs.length>1?'<div style="font-size:10.5px;color:#b8860b;font-family:inherit;white-space:nowrap" title="'+facEsc(tip)+'">⚠ 同年 '+fs.length+' 筆條目</div>':''); };
       h+=`<tr${dC}><td style="text-align:left;padding-left:18px;color:var(--g)">係數代號</td>`+ys.map(y=>`<td style="text-align:right;font-size:11.5px;font-family:Consolas,monospace${openSt(y)}">${cellTxt(y)}</td>`).join('')+`</tr>`; }
@@ -5489,11 +5490,11 @@ function facC05Render(code){
   });
   /* V129-122（使用者 261126「A04 照示意併成一列」）：2025 以前照國家建、2026 合成 ALL、值都一樣的代號 → 畫面併成 ALL 一列，區域欄下面註明以前只有哪些國家。
      資料庫不動（條目的區域還是原本的）；只對清單內的代號，而且值全部相同、年度不重疊才併，不符合就照原本分列。 */
-  const C5MERGE=['C05-A04-01','C05-B04-01'];   /* V129-123：B04 也併（使用者 261126） */
+  const C5MERGE=['C05-A04-01','C05-B04-01','C05-C04-01'];   /* V129-124：C04 也併（使用者 261126） */   /* V129-123：B04 也併（使用者 261126） */
   subs.forEach(S=>{ if(S.isOld||S.split||C5MERGE.indexOf(S.key)<0)return;
     const oth=S.facs.filter(f=>rgOf(f)!=='ALL'); if(!oth.length||oth.length===S.facs.length)return;
     const vs=S.facs.map(eqOf); if(vs.some(v=>v==null||Math.abs(v-vs[0])>1e-9))return;
-    const ys=S.facs.map(f=>+f.factor_year); if(new Set(ys).size!==ys.length)return;
+    /* V129-124：同一年可以有好幾國（例 C05-C04 2023 中國、越南、泰國），值都一樣就併 */
     const ry=[...new Set(oth.map(rgOf))], my=Math.max(...oth.map(f=>+f.factor_year));
     S.mergeNote=my+' 以前只有 '+ry.join('、');   /* 只當「這一列是併列」的記號；畫面不顯示（使用者 261126「下方2025以前只有CN不需要」） */
     S.facs=S.facs.map(f=>rgOf(f)==='ALL'?f:Object.assign({},f,{country:'ALL'})); });
@@ -5507,7 +5508,7 @@ function facC05Render(code){
   let body='', lastBig=null; const seenId={};
   subs.forEach(S=>{
     const ids=new Set(S.facs.map(f=>f.factor_id));
-    const m=S.mergeNote?facSrcModel(code,null,S.facs):facSrcModel(code,f=>ids.has(f.factor_id));   /* V129-122：併列的代號用畫面用的條目（區域當 ALL） */
+    const m=S.mergeNote?facSrcModel(code,null,S.facs):facSrcModel(code,f=>ids.has(f.factor_id)); if(S.mergeNote)m.c5merge=true;   /* V129-124：併列記號給 facSrcRender 用 */   /* V129-122：併列的代號用畫面用的條目（區域當 ALL） */
     /* 年度欄統一成 2022～最後有條目的年度；這一列沒有條目的年度就是空的（不顯示「沿用前一年」的預覽） */
     m.blocks.forEach(b=>{ if(m.openY!=null){ b.cells[m.openY]={}; b.eq[m.openY]=null; } YS.forEach(y=>{ if(!b.cells[y]){ b.cells[y]={}; b.eq[y]=null; } }); b.gases=b.gases.filter(g=>YS.some(y=>b.cells[y][g]));
       const st=new Set(); S.facs.filter(f=>rgOf(f)===b.rg).forEach(f=>sitesOf(f).forEach(x=>st.add(x))); b.sites=[...st]; });
@@ -5530,12 +5531,13 @@ function facC05Render(code){
         tr.insertBefore(a,td0); tr.insertBefore(w,td0); td0.style.fontWeight='600'; td0.style.whiteSpace='nowrap';   /* V129-122：區域一行（使用者 261126「區域寬一點最好一行」） */
         { const us=[...td0.querySelectorAll('span')].find(x=>/^合成當量/.test(x.textContent.trim())); if(us)us.remove(); }   /* 單位寫在表上方的說明，不每列重複 */
         YS.forEach((y,i)=>{ const c=tr.cells[3+i]; if(!c)return; const tn=[...c.childNodes].find(n=>n.nodeType===3&&/\d/.test(n.nodeValue)); if(tn){ c.title=y+'：'+tn.nodeValue.trim()+' kgCO₂e／公噸'; tn.nodeValue=tn.nodeValue.replace(/(\.\d*?[1-9])0+(\s*)$/,'$1$2').replace(/\.0+(\s*)$/,'$1'); } });   /* 這一列的值不顯示尾數的 0（照定案示意的寫法）；完整 10 位在滑鼠提示與展開的明細 */
+        if(S.mergeNote)tr.querySelectorAll('span').forEach(sp=>{ if(/^⚠ \d+ 筆$/.test(sp.textContent.trim()))sp.remove(); });   /* V129-124：併列是不同國家同值，不是要清的重複 */
         if(!S.split&&olds.length>1)tr.querySelectorAll('span').forEach(sp=>{ const mt=sp.textContent.trim().match(/^⚠ (\d+) 筆$/); if(mt){ sp.textContent='併 '+mt[1]+' 條·同值'; sp.style.color='#7a8f84'; sp.title='這一格是 '+mt[1]+' 個舊代號的條目併在一起看，值相同（點開這一列看各條的係數代號）'; } });   /* 同值併列不是要清的重複條目，不用警示的寫法 */
         tr.dataset.c5=[S.key].concat(olds).join('|');
         const src=f0?(note(f0,'主值出處')||f0.factor_source||''):'', why=f0?note(f0,'選用原因'):'';
         pend=(src||why)?'<tr class="c5src"'+(window.FC5SRC?'':' style="display:none"')+'><td colspan="'+NC+'" style="text-align:left;white-space:normal;font-size:11.5px;line-height:1.55;color:#4a5f55;padding:2px 10px 7px 26px;border-bottom:1px solid #cfe0d6">'+(src?'<b>出處</b>：'+facEsc(src):'')+(src&&why?'<br>':'')+(why?'<span style="color:#8a5a00"><b>選用原因</b>：'+facEsc(why)+'</span>':'')+'</td></tr>':'';   /* 使用者 261125「沒有滑移的功能，看不到全部內容」：年度展開後放不下出處、選用原因兩欄（表格區只有約 940 寬），改成每一列下面一行、全文直接看得到，不用左右捲 */
         tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace">'+(oldTxt?facEsc(oldTxt):'<span style="color:#9aa">—</span>')+'</td>');
-      } else { { const tw=document.createTreeWalker(tr,NodeFilter.SHOW_TEXT); let tn; while((tn=tw.nextNode()))tn.nodeValue=c5D(tn.nodeValue); }   /* V129-121：明細裡的係數代號也不顯示 -01 */ const c0=tr.cells[0]; if(c0)c0.colSpan=3; [...tr.cells].forEach(c=>{ c.style.whiteSpace='normal'; c.style.wordBreak='break-all'; }); tr.querySelectorAll('span').forEach(x=>{ if(x.style.whiteSpace==='nowrap')x.style.whiteSpace='normal'; });   /* 年度欄比原本窄，明細裡的代號與 10 位數字要能換行，不然會疊在一起 */ tr.insertAdjacentHTML('beforeend','<td></td>'); }
+      } else { if(S.mergeNote)tr.querySelectorAll('span').forEach(x=>{ if(/^×\d+$/.test(x.textContent.trim()))x.remove(); });   /* V129-124 */ { const tw=document.createTreeWalker(tr,NodeFilter.SHOW_TEXT); let tn; while((tn=tw.nextNode()))tn.nodeValue=c5D(tn.nodeValue); }   /* V129-121：明細裡的係數代號也不顯示 -01 */ const c0=tr.cells[0]; if(c0)c0.colSpan=3; [...tr.cells].forEach(c=>{ c.style.whiteSpace='normal'; c.style.wordBreak='break-all'; }); tr.querySelectorAll('span').forEach(x=>{ if(x.style.whiteSpace==='nowrap')x.style.whiteSpace='normal'; });   /* 年度欄比原本窄，明細裡的代號與 10 位數字要能換行，不然會疊在一起 */ tr.insertAdjacentHTML('beforeend','<td></td>'); }
       body+=tr.outerHTML; });
     body+=pend;
   });
