@@ -307,7 +307,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-133</b> · 2026/11/27</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-135</b> · 2026/11/27</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -500,6 +500,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
         <tr><td style="text-align:left">明細輸入／修改</td><td>✓</td><td>✓</td><td>─</td><td>✓</td></tr>
         <tr><td style="text-align:left">明細查詢</td><td>✓</td><td>✓</td><td>✓（唯讀）</td><td>✓</td></tr><tr><td style="text-align:left"><b>廠區權限（範圍）</b></td><td>預設本廠·可調</td><td>預設本廠·可調</td><td><b>本廠／指定多廠／全部</b></td><td>全部廠區</td></tr>
         <tr><td style="text-align:left">係數庫／匯率庫維護</td><td>─（唯讀選用）</td><td><b>✓</b></td><td>─</td><td>✓</td></tr>
+        <tr><td style="text-align:left">新增係數條目（係數庫·營運廢棄物）</td><td>─</td><td>勾選才有</td><td>─</td><td>勾選才有</td></tr>
         <tr><td style="text-align:left">送出審核（各類「📤 送出」）</td><td>✓（本廠）</td><td>✓</td><td>─</td><td>✓</td></tr>
         <tr><td style="text-align:left">審核：確認通過／退回（含退回已通過、整廠退回）</td><td>─</td><td><b>✓</b></td><td>─</td><td>✓</td></tr>
         <tr><td style="text-align:left">資料年度管理（鎖定／開放）</td><td>─</td><td><b>✓</b></td><td>─</td><td>✓</td></tr>
@@ -618,7 +619,7 @@ const ghgFetch=async(input,init)=>{
   const m=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
   const url=String(typeof input==='string'?input:((input&&input.url)||input||''));
   const isW=/^(POST|PATCH|PUT|DELETE)$/.test(m)&&url.indexOf(SUPABASE_URL+'/rest/v1/')===0&&url.indexOf('/rest/v1/rpc/')<0;
-  if(m==='POST'&&(url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_verify_')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_site_sort_save')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_recalc_apply')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_factor_add_c05')===0   /* V129-118：新增係數條目（批416）只准系統管理，要帶登入者憑證 */)   /* V129-105：係數／匯率存檔後自動重算（批395 ghg_recalc_apply）也要帶登入者憑證；原本兩項不變（使用者 261110「存檔後自動重算」） */){   /* V129-79-1：儲存廠區順序也要帶登入者憑證 */   /* V129-41-3：送查證／退回／定稿／撤銷定稿＝只開放登入的人（批261），要帶登入者自己的憑證 */
+  if(m==='POST'&&(url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_verify_')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_site_sort_save')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_recalc_apply')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_factor_add_c05')===0   /* V129-118：新增係數條目（批416）要帶登入者憑證；V129-135：資料庫改看權限表勾選（批427） */)   /* V129-105：係數／匯率存檔後自動重算（批395 ghg_recalc_apply）也要帶登入者憑證；原本兩項不變（使用者 261110「存檔後自動重算」） */){   /* V129-79-1：儲存廠區順序也要帶登入者憑證 */   /* V129-41-3：送查證／退回／定稿／撤銷定稿＝只開放登入的人（批261），要帶登入者自己的憑證 */
     const tk=await ghgJwtW();
     if(!tk){ const msg='沒有登入憑證（登入逾時，或這個分頁的登入已失效），這次的送查證／退回／定稿沒有送出——請登出後用工號＋密碼重新登入。';
       ghgWriteWarn(msg); return new Response(JSON.stringify({code:'GHG401',message:msg,details:null,hint:null}),{status:401,headers:{'Content-Type':'application/json'}}); }
@@ -2034,10 +2035,10 @@ function permExportBook(){   /* V124-1：組出要匯出的活頁簿內容（{na
   const yes=v=>v?'✓':'';
   const BU=window._permBU||{map:{},err:'還沒讀到'}, buOf=c=>BU.err?'（讀不到 OMS 廠區主檔）':(BU.map[c]||'');   /* V125-1：BU 取自 OMS 廠區主檔；主檔沒有的代碼留空白 */
   const RK=Object.keys(GHGROLES);   /* V125-1：角色四欄＝跟畫面上的膠囊同一個出處、同一個順序 */
-  const head=['事業群','廠區','工號','姓名','英文名','部門','職稱','Email'].concat(RK.map(k=>GHGROLES[k].n)).concat(['廠區權限','可輸入修改','可維護係數庫','可審核通過退回','可設定權限','指派人','指派時間']);   /* V129-40-1：多「可審核通過退回」 */   /* V127-1：前面基本欄照 SyncHub 各系統統一的順序；V127-2：GHG 不含帳號狀態（使用者 261015） */
+  const head=['事業群','廠區','工號','姓名','英文名','部門','職稱','Email'].concat(RK.map(k=>GHGROLES[k].n)).concat(['廠區權限','可輸入修改','可維護係數庫','可審核通過退回','可設定權限','可新增係數條目','指派人','指派時間']);   /* V129-40-1：多「可審核通過退回」 */   /* V127-1：前面基本欄照 SyncHub 各系統統一的順序；V127-2：GHG 不含帳號狀態（使用者 261015） */
   const rows=list.map(p=>{ const r=D.roles[p.emp_id]||null, rk=r?r.role:'', cap=rk?ROLECAP[rk]:null;
     return [buOf(p.factory_code||''),p.factory_code||'',p.emp_id||'',p.name||'',('eng_name' in p)?(p.eng_name||''):'讀不到',p.dept||'',p.title||'',p.email||'']
-      .concat(RK.map(k=>rk===k?'✓':'')).concat([rk?permScopeLabel(r,p):'',yes(cap&&cap.e),yes(cap&&cap.f),yes(cap&&cap.a),yes(cap&&cap.p),r?(r.updated_by||''):'',r?tm(r.updated_at):'']); });
+      .concat(RK.map(k=>rk===k?'✓':'')).concat([rk?permScopeLabel(r,p):'',yes(cap&&cap.e),yes(cap&&cap.f),yes(cap&&cap.a),yes(cap&&cap.p),yes(r&&r.can_add_factor&&(rk==='esg'||rk==='admin')),r?(r.updated_by||''):'',r?tm(r.updated_at):'']); });
   const cnt={}; list.forEach(p=>{ const r=D.roles[p.emp_id]; const k=r?r.role:''; cnt[k]=(cnt[k]||0)+1; });
   const info=[['GHG 溫室氣體盤查系統　權限名單'],[],['匯出時間',tm(now)],['匯出人',curGhgUser?((curGhgUser.emp_id||'')+' '+(curGhgUser.name||'')).trim():''],['範圍',cur?('廠區 '+cur):'全部廠區'],
     ['排序',(window._permSort&&window._permSort.key)?'照畫面上的排序':'廠區 → 工號'],['人數',list.length],[]]
@@ -2047,7 +2048,7 @@ function permExportBook(){   /* V124-1：組出要匯出的活頁簿內容（{na
      ['事業群來源',BU.err?('這次讀不到 OMS 廠區主檔（'+BU.err+'），事業群欄沒有資料。'):'OMS 廠區主檔的 BU 欄；主檔沒有的廠區代碼留空白。'],
      ['英文名來源','OMS 授權名單的英文名；OMS 沒填的留空白。'],
      ['資料來源','人員與英文名＝OMS 授權名單；事業群＝OMS 廠區主檔；角色與廠區權限＝GHG 權限表。']]);
-  const sheets=[{name:'權限名單',aoa:[head].concat(rows),w:[16,7,13,10,14,16,14,30].concat(RK.map(()=>10)).concat([16,10,12,10,10,22,17]),filter:true}   /* V129-40-6：補「可審核通過退回」欄寬（19 欄） */,
+  const sheets=[{name:'權限名單',aoa:[head].concat(rows),w:[16,7,13,10,14,16,14,30].concat(RK.map(()=>10)).concat([16,10,12,10,10,14,22,17]),filter:true}   /* V129-40-6：補「可審核通過退回」欄寬（19 欄） */,
                 {name:'匯出說明',aoa:info,w:[14,22,60]}];
   const E=(isAdm?(window._extUsers||[]):[]);
   if(E.length){ sheets.push({name:'外部查核名單',filter:true,w:[12,14,30,18,12,8,12,24],
@@ -2131,7 +2132,7 @@ function permRender(){
     +'<span style="font-size:12px;color:var(--g)">① OMS 名單：已勾 GHG <b>'+D.ppl.length+'</b> 人｜已指派 <b>'+Object.keys(D.roles).length+'</b> 人　·　② 自建名單見下方</span>'
     +'<button class="sec" onclick="permExport()" title="把畫面上這份名單（照現在的廠區篩選、搜尋與排序）下載成 Excel" style="margin-left:auto;padding:4px 12px;font-size:12px;white-space:nowrap">📥 匯出名單</button></div>';   /* V124-1 */
   head+=permOrphHtml();   // V107-1
-  let hh=head+'<div class="permwrap"><table class="permt" style="font-size:12.5px;width:100%;table-layout:auto"><thead><tr>'+permTh('廠區','site','padding:6px 10px')+permTh('工號','emp','text-align:left;padding:6px 10px')+permTh('姓名','name','text-align:left;padding:6px 10px')+permTh('部門','dept','text-align:left;padding:6px 10px')+permTh('職稱','title','text-align:left;padding:6px 10px')+permTh('Email 帳號','email','text-align:left;padding:6px 10px')+((curGhgUser&&curGhgUser.role==='admin')?permTh('登入','acct','text-align:left;padding:6px 10px'):'')+permTh('Role 角色（點選即指派）','role','text-align:left;padding:6px 10px')+permTh('廠區權限','scope','text-align:left;padding:6px 10px')+'<th style="padding:6px 6px;white-space:normal;line-height:1.2">輸入<br>修改</th><th style="padding:6px 6px;white-space:normal;line-height:1.2">係數庫<br>維護</th><th style="padding:6px 6px;white-space:normal;line-height:1.2" title="可以在資料登錄頁按「✓ 確認」「↩ 退回」，在審核進度頁按「↩ 整廠退回」">審核<br>通過／退回</th><th style="padding:6px 6px;white-space:normal;line-height:1.2">權限<br>設定</th>'+permTh('指派記錄','upd','text-align:left;padding:6px 10px')+'<th></th></tr></thead><tbody>';   // V48-1b:width:auto=欄寬夠用右側留白(使用者7/15:別填滿整頁造成欄距過大);工號獨立欄靠左
+  let hh=head+'<div class="permwrap"><table class="permt" style="font-size:12.5px;width:100%;table-layout:auto"><thead><tr>'+permTh('廠區','site','padding:6px 10px')+permTh('工號','emp','text-align:left;padding:6px 10px')+permTh('姓名','name','text-align:left;padding:6px 10px')+permTh('部門','dept','text-align:left;padding:6px 10px')+permTh('職稱','title','text-align:left;padding:6px 10px')+permTh('Email 帳號','email','text-align:left;padding:6px 10px')+((curGhgUser&&curGhgUser.role==='admin')?permTh('登入','acct','text-align:left;padding:6px 10px'):'')+permTh('Role 角色（點選即指派）','role','text-align:left;padding:6px 10px')+permTh('廠區權限','scope','text-align:left;padding:6px 10px')+'<th style="padding:6px 6px;white-space:normal;line-height:1.2">輸入<br>修改</th><th style="padding:6px 6px;white-space:normal;line-height:1.2">係數庫<br>維護</th><th style="padding:6px 6px;white-space:normal;line-height:1.2" title="可以在資料登錄頁按「✓ 確認」「↩ 退回」，在審核進度頁按「↩ 整廠退回」">審核<br>通過／退回</th><th style="padding:6px 6px;white-space:normal;line-height:1.2">權限<br>設定</th><th style="padding:6px 6px;white-space:normal;line-height:1.2;text-align:left" title="勾了的人在係數庫看得到「＋ 新增係數條目」；只有系統管理能勾，只開放 ESG小組、系統管理">新增<br>係數條目</th>'+permTh('指派記錄','upd','text-align:left;padding:6px 10px')+'<th></th></tr></thead><tbody>';   // V48-1b:width:auto=欄寬夠用右側留白(使用者7/15:別填滿整頁造成欄距過大);工號獨立欄靠左
   list.forEach(p=>{const r=D.roles[p.emp_id]||null; const rk=r?r.role:'';
     const cap=rk?ROLECAP[rk]:null;
     const pills=Object.keys(GHGROLES).map(k=>{const on=(rk===k);
@@ -2149,8 +2150,8 @@ function permRender(){
       +((curGhgUser&&curGhgUser.role==='admin')?('<td style="text-align:left;white-space:normal;line-height:1.6;padding:4px 6px">'+permAcctCell(p)+'</td>'):'')
       +'<td style="text-align:left;white-space:normal;padding:4px 6px">'+pills+'</td>'
       +'<td style="text-align:left;white-space:nowrap;padding:4px 6px">'+scopeCell+'</td>'
-      +'<td>'+dot(cap&&cap.e)+'</td><td>'+dot(cap&&cap.f)+'</td><td>'+dot(cap&&cap.a)+'</td><td>'+dot(cap&&cap.p)+'</td>'
-      +'<td style="text-align:left;font-size:11px;color:var(--g);white-space:nowrap" title="'+(r?facEsc((r.updated_by||'')+' '+String(r.updated_at||'').slice(0,19).replace('T',' ')):'')+'">'+(r?facEsc(String(r.updated_at||'').slice(0,10)):'')+'</td>'
+      +'<td>'+dot(cap&&cap.e)+'</td><td>'+dot(cap&&cap.f)+'</td><td>'+dot(cap&&cap.a)+'</td><td>'+dot(cap&&cap.p)+'</td>'+permAddCell(p,r,rk)   /* V129-135 */
+      +'<td style="text-align:left;font-size:11px;color:var(--g);white-space:nowrap" title="'+(r?facEsc((r.updated_by||'')+' '+permLocalTm(r.updated_at,1)):'')+'">'+(r?facEsc(permLocalTm(r.updated_at)):'')+'</td>'
       +'<td><span id="permst_'+facEsc(p.emp_id)+'" style="font-size:11.5px;color:var(--d);font-weight:700"></span></td></tr>';
     if(rk&&!fixAll&&window._permScopeEdit===p.emp_id){   // V48-2:✎展開廠區權限編輯列(全部+20廠chips,「全部」與單廠互斥)
       const sc=(r&&r.scope)||[p.factory_code];
@@ -2162,7 +2163,7 @@ function permRender(){
         +'<span onclick="window._permScopeEdit=null;permRender()" style="cursor:pointer;display:inline-block;padding:2px 12px;margin:2px 3px 2px 10px;border-radius:10px;font-size:11.5px;background:var(--d);color:#fff;font-weight:700">✔ 完成</span>'
         +'<span style="font-size:11px;color:var(--g);margin-left:8px">點選切換即存；「全部廠區」選定自動收合；多選完按 ✔ 完成（或再點 ✎）</span></td></tr>';
     }});
-  hh+='</tbody>'+((curGhgUser&&curGhgUser.role==='admin')?('<tbody>'+extPanelHtml(15)+'</tbody>'):'')+'</table></div>';   // V56:自建名單(外部查核)；V129-84-2：接在同一張表、欄位對齊上方
+  hh+='</tbody>'+((curGhgUser&&curGhgUser.role==='admin')?('<tbody>'+extPanelHtml(16)+'</tbody>'):'')+'</table></div>';   // V56:自建名單(外部查核)；V129-84-2：接在同一張表、欄位對齊上方
   hh+=sitePanelHtml();   // V129-79：廠區設定（⇅ 調整順序）
   box.innerHTML=hh;
 }
@@ -2212,6 +2213,32 @@ async function permRevokeOrphan(emp){
   delete D.roles[emp]; D.orphans=(D.orphans||[]).filter(x=>x.r.emp_id!==emp);
   permRender(); permAlertRender((D.ppl||[]).filter(p=>!D.roles[p.emp_id]), permOrphList());
 }
+/* ══ V129-135：權限表「新增係數條目」（使用者 261127「照示意做，給不給ESG是我才能勾選 ESG自己不能勾給自己」「4 個系統管理都可以勾」；示意 GHG_權限表_新增係數條目勾選人員_示意_261127）
+   只有系統管理看得到權限頁、也只有系統管理寫得進權限表（資料庫 b208 規則）；只開放 ESG小組、系統管理被勾（資料庫批427 觸發器）。勾或取消先確認一次。 ══ */
+function permLocalTm(v,withTime){ if(!v)return ''; const d=new Date(v); if(isNaN(d))return String(v); const p2=x=>String(x).padStart(2,'0'); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+(withTime?(' '+p2(d.getHours())+':'+p2(d.getMinutes())):''); }   /* V129-135：資料庫存的是 UTC（+00:00），直接切字串會差 8 小時（17:25 顯示成 09:25、凌晨的日期差一天）；改照電腦所在時區顯示 */
+function permAddCell(p,r,rk){
+  if(!(rk==='esg'||rk==='admin'))return '<td style="text-align:left;white-space:nowrap;color:#bbb;font-size:11.5px" title="只開放 ESG小組、系統管理">不能勾</td>';
+  const on=!!(r&&r.can_add_factor), tip=(r&&r.add_factor_at)?('最後一次'+(on?'勾選':'取消')+'：'+(r.add_factor_by||'')+' '+permLocalTm(r.add_factor_at,1)):'還沒勾過';
+  return '<td style="text-align:left;white-space:nowrap" title="'+facEsc(tip)+'"><label style="cursor:pointer;font-size:12px"><input type="checkbox"'+(on?' checked':'')+' onclick="event.preventDefault();permSetAdd(\''+facEsc(p.emp_id)+'\','+(on?'false':'true')+')" style="width:auto;vertical-align:middle;margin:0 3px 0 0">'+(on?'可新增':'')+'</label></td>';
+}
+async function permSetAdd(emp,on){
+  const D=window._permData||{roles:{},ppl:[]}; const r=D.roles[emp]; if(!r)return;
+  if(!curGhgUser||curGhgUser.role!=='admin'){ alert('只有系統管理可以勾「新增係數條目」。'); return; }
+  if(!(r.role==='esg'||r.role==='admin')){ alert('「新增係數條目」只開放 ESG小組、系統管理。'); return; }
+  const pp=(D.ppl||[]).find(x=>x.emp_id===emp)||{}, nm=(pp.name||emp), me=(emp===curGhgUser.emp_id);
+  const msg=on?('要讓 '+nm+' 可以新增係數條目嗎？\n\n勾了以後，他在「📐 係數庫」會看到「＋ 新增係數條目」按鈕；新加的條目一律是「待確認」，會留紀錄（誰、什麼時候、加了什麼）。')
+              :('取消 '+nm+' 的「新增係數條目」？\n\n取消後他在係數庫看不到「＋ 新增係數條目」，資料庫也不讓他新增。'+(me?'\n⚠ 這是您自己的帳號。':''));
+  if(!confirm(msg))return;
+  const who=curGhgUser.emp_id+' '+curGhgUser.name, at=new Date().toISOString();
+  const {data,error}=await sb.from('ghg_user_roles').update({can_add_factor:on,add_factor_by:who,add_factor_at:at,updated_by:who,updated_at:at}).eq('emp_id',emp).select('emp_id,role,can_add_factor,add_factor_by,add_factor_at,updated_by,updated_at');
+  if(error){ alert('沒有存到：'+error.message+(/can_add_factor/.test(String(error.message))?'\n（資料庫還沒有這一欄：要先跑 SQL 753）':'')); return; }
+  if(!data||!data.length){ alert('沒有存到：資料庫沒有更新任何一列（可能你的帳號沒有權限，或這個人的角色剛被改過）；請重新整理再試。'); return; }
+  if(!!data[0].can_add_factor!==on){ alert('沒有存到：資料庫回來的結果是「'+(data[0].can_add_factor?'可新增':'不可新增')+'」（角色不是 ESG小組／系統管理會被資料庫自動取消）。'); }
+  Object.assign(r,data[0]);
+  if(me)curGhgUser.canAdd=!!(data[0].can_add_factor&&(data[0].role==='admin'||data[0].role==='esg'));
+  permRender();
+  const tag=document.getElementById('permst_'+emp); if(tag){tag.textContent=data[0].can_add_factor?'✓ 已勾':'✓ 已取消'; setTimeout(()=>{if(tag)tag.textContent='';},1800);}
+}
 async function permSetRole(emp,role){   // V48-1:點膠囊指派;再點同角色=取消;V48-2:寫入含scope(預設本人廠區,admin=全部)
   const D=window._permData||{roles:{}};
   const curR=(D.roles[emp]||{}).role||'';
@@ -2231,7 +2258,7 @@ async function permSetRole(emp,role){   // V48-1:點膠囊指派;再點同角色
   if(!v){({error}=await sb.from('ghg_user_roles').delete().eq('emp_id',emp)); window._permScopeEdit=null;}
   else{({error}=await permUpsertRole({emp_id:emp,role:v,scope:sc,updated_by:who,updated_at:new Date().toISOString()}));}   // V107-1：多寫登入 Email
   if(error){alert('寫入失敗：'+error.message+(String(error.message).indexOf('check')>=0?'\n（請確認已跑 56_SQL 更新角色約束與 scope 欄）':''));return;}
-  if(!v)delete D.roles[emp]; else D.roles[emp]={emp_id:emp,role:v,scope:sc,updated_by:who,updated_at:new Date().toISOString()};
+  if(!v)delete D.roles[emp]; else D.roles[emp]=Object.assign({},D.roles[emp]||{},{emp_id:emp,role:v,scope:sc,updated_by:who,updated_at:new Date().toISOString(),can_add_factor:(v==='esg'||v==='admin')?!!((D.roles[emp]||{}).can_add_factor):false});   /* V129-135：換成 esg／admin 以外的角色＝資料庫自動取消「新增係數條目」（批427 觸發器），畫面同步 */
   permRender();
   permAlertRender(D.ppl.filter(p=>!D.roles[p.emp_id]));   // V49-2:指派後即時刷新警示
   const tag=document.getElementById('permst_'+emp); if(tag){tag.textContent=v?'✓ 已存':'✓ 已取消'; setTimeout(()=>{if(tag)tag.textContent='';},1800);}
@@ -2454,7 +2481,7 @@ async function ylockRender(){ await ensureYLocks(true);
   const ys=[...new Set(base.concat(Object.keys(YLOCKS).filter(k=>/^\d{4}$/.test(k)).map(Number)))].filter(y=>y!==TRIAL_Y).sort((a,b)=>a-b);   /* V99：只取年份（原本把 _declMax 畫成「NaN 鎖定」）；試打年度另外一顆 */
   let hh='<div style="background:var(--t);border-left:4px solid var(--p);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12.5px"><b style="color:var(--d)">📅 資料年度管理</b>（ESG小組／系統管理·點年度膠囊切換；鎖定＝全員僅供查看，查詢與差異註記不受影響；未列年度預設鎖定）<div style="margin-top:6px">';
   ys.forEach(y=>{const r=YLOCKS[y]||null; const lk=yearLocked(y);
-    hh+='<span onclick="ylockToggle('+y+')" title="'+facEsc(r?((r.updated_by||'')+' '+String(r.updated_at||'').slice(0,10)+(r.note?('·'+r.note):'')):'尚未設定(預設鎖定)')+'" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px;border-radius:12px;font-size:12px;border:1.5px solid '+(lk?'#c0392b':'var(--p)')+';'+(lk?'background:#fdf3f2;color:#c0392b;font-weight:700':'background:var(--p);color:#fff;font-weight:700')+'">'+(lk?'🔒 ':'✏ ')+y+(lk?' 鎖定':' 開放')+'</span>';});
+    hh+='<span onclick="ylockToggle('+y+')" title="'+facEsc(r?((r.updated_by||'')+' '+permLocalTm(r.updated_at)+(r.note?('·'+r.note):'')):'尚未設定(預設鎖定)')+'" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px;border-radius:12px;font-size:12px;border:1.5px solid '+(lk?'#c0392b':'var(--p)')+';'+(lk?'background:#fdf3f2;color:#c0392b;font-weight:700':'background:var(--p);color:#fff;font-weight:700')+'">'+(lk?'🔒 ':'✏ ')+y+(lk?' 鎖定':' 開放')+'</span>';});
   { const tl=yearLocked(TRIAL_Y), tr=YLOCKS[TRIAL_Y]||null;   /* V99：試打年度膠囊 */
     hh+='<span onclick="ylockToggle('+TRIAL_Y+')" title="'+facEsc('試打年度：給 ESG 試用登錄畫面。開放＝各登錄頁年度選單出現「'+TRIAL_Y+' 試打」；係數、匯率一律用 '+declMaxY()+' 年；資料不進任何正式年度，試完由 DTO 整批刪除'+(tr?('（'+(tr.updated_by||'')+' '+String(tr.updated_at||'').slice(0,10)+'）'):''))+'" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px 2px 14px;border-radius:12px;font-size:12px;font-weight:700;border:1.5px dashed #a98bd0;'+(tl?'background:#faf7fd;color:#7a5aa6':'background:#6b3fa0;color:#fff')+'">🧪 '+TRIAL_Y+' 試打 '+(tl?'鎖定':'開放')+'</span>'; }
   hh+='<span onclick="ylockAdd()" title="預建下一個年度(鎖定狀態,要用時再點開)" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px;border-radius:12px;font-size:12px;border:1.5px dashed var(--g);color:var(--g)">＋ 新增年度</span>';
@@ -2669,7 +2696,7 @@ async function lgLogin(p,silent){
   const r=(rl||[])[0];
   if(rlErr){ if(!silent)lgErr('讀不到 GHG 角色（'+rlErr.message+'）——可能是登入逾時，請重新用工號＋密碼登入'); sessionStorage.removeItem(LGKEY); return; }   /* V129-41-2 */
   if(!r){ if(!silent)lgErr(sessionStorage.getItem('ghg_jwt')?'身分確認無誤，但此帳號尚未指派 GHG 角色（無權限）——請洽系統管理於權限頁指派角色':'登入逾時，請重新用工號＋密碼登入'); sessionStorage.removeItem(LGKEY); return; }   // V55-2fix:lg_msg(V51殘留)→lgErr
-  curGhgUser={emp_id:p.emp_id,name:p.name,factory_code:p.factory_code,role:r.role,scope:(r.role==='admin'||r.role==='esg')?['*']:(r.scope||[p.factory_code].filter(Boolean)),roleName:(GHGROLES[r.role]||{}).n||r.role};   /* V129-63：ESG小組、系統管理一律全部廠區（使用者 261027「ESG 管全集團」；資料庫批306 同一條） */
+  curGhgUser={emp_id:p.emp_id,name:p.name,factory_code:p.factory_code,role:r.role,scope:(r.role==='admin'||r.role==='esg')?['*']:(r.scope||[p.factory_code].filter(Boolean)),roleName:(GHGROLES[r.role]||{}).n||r.role,canAdd:!!(r.can_add_factor&&(r.role==='admin'||r.role==='esg'))};   /* V129-135：權限表「新增係數條目」有沒有被勾（批427） */   /* V129-63：ESG小組、系統管理一律全部廠區（使用者 261027「ESG 管全集團」；資料庫批306 同一條） */
   sessionStorage.setItem(LGKEY,p.emp_id);
   if(window._ghgAnonDenied&&!silent){ location.reload(); return; }   /* V129-54：登入前的讀取被擋（資料保護第二段後一定會）→ 重新整理一次，這次全部帶登入憑證；同分頁登入會保留 */
   document.getElementById('loginov').style.display='none';
@@ -3818,7 +3845,7 @@ function fyApply(root){ if(!root)return; root.querySelectorAll('table').forEach(
   const hs=[...hr.cells]; const fi=hs.findIndex(c=>/^\s*20[0-9][0-9]/.test(c.textContent)); if(fi<1)return; t.dataset.fy=String(fi);
   let fyx=0; { const cols=t.querySelectorAll('colgroup>col'); const fyShare=(t.offsetWidth-hs.slice(0,fi).reduce((a,c)=>a+c.offsetWidth,0))/Math.max(1,hs.length-fi);   /* V129-97：年度欄平分後每欄多寬（offsetWidth 不受縮放影響） */ if(cols.length===hs.length)hs.forEach((c,i)=>{ if(i<fi)return; const y=parseInt(c.textContent,10); if(!(y>2000))return; let op=false; try{ op=y>declMaxY()&&!(typeof trialY==='function'&&trialY(y))&&!!t.querySelector('td a[onclick*="frevOpen"]'); }catch(e){} if(!op)return; const w0=parseFloat(cols[i].style.width)||0; if(w0<132&&fyShare<132){ cols[i].style.width='132px'; fyx+=132-Math.max(w0,96); } }); }   /* V129-58-1：開帳年度欄要放確認／修改，放寬到 132px（表不夠寬就往右捲）；V129-97：平分後已有 132 就不設，年度欄一樣寬（使用者 261103「各年度欄寬應該平均」） */
   let w=t.parentElement; if(!w.classList.contains('fyw')){ w=document.createElement('div'); w.className='fyw'; t.parentNode.insertBefore(w,t); w.appendChild(t); }
-  const lw=hs.slice(0,fi).reduce((a,c)=>a+c.offsetWidth,0), need=Math.ceil(lw+(hs.length-fi)*96+fyx);   /* V129-14：offsetWidth（不受縮放影響）；年度欄最小 84→96 */ if(t.getBoundingClientRect().width<need-1)t.style.minWidth=need+'px';
+  const lw=hs.slice(0,fi).reduce((a,c)=>a+c.offsetWidth,0), need=Math.ceil(lw+(hs.length-fi)*96+fyx);   /* V129-14：offsetWidth（不受縮放影響）；年度欄最小 84→96 */ if(!parseFloat(t.style.minWidth)&&t.getBoundingClientRect().width<need-1)t.style.minWidth=need+'px';   /* V129-134：表格自己寫了最小寬度（C05 係數總表）就照它的，不用年度欄 96 重算蓋回去 */
   fyPos(t); }); }
 /* V129-14：表格框用滿右邊格子下面空著的高度（原本只看視窗高 100vh-230px，右邊格子跟左邊目錄一樣高、內容短時下面空著）。
    先回到原本的最高，再量格子內容底下空了多少，框就長高多少；空間不夠就維持原本最高。只長不縮、不超過整張表 */
@@ -5561,7 +5588,7 @@ function facC05Render(code){
         const src=f0?(note(f0,'主值出處')||f0.factor_source||''):'', why=f0?note(f0,'選用原因'):'';
         pend=(src||why)?'<tr class="c5src"'+(window.FC5SRC?'':' style="display:none"')+'><td colspan="'+NC+'" style="text-align:left;white-space:normal;font-size:11.5px;line-height:1.55;color:#4a5f55;padding:2px 10px 7px 26px;border-bottom:1px solid #cfe0d6">'+(src?'<b>出處</b>：'+facEsc(src):'')+(src&&why?'<br>':'')+(why?'<span style="color:#8a5a00"><b>選用原因</b>：'+facEsc(why)+'</span>':'')+'</td></tr>':'';   /* 使用者 261125「沒有滑移的功能，看不到全部內容」：年度展開後放不下出處、選用原因兩欄（表格區只有約 940 寬），改成每一列下面一行、全文直接看得到，不用左右捲 */
         { const same=!S.isOld&&oldTxt&&oldTxt===c5D(S.key).replace(/^C05-/,''); if(same||!oldTxt)oldTxt=''; }   /* V129-132：舊代號跟新代號一樣（只差前面 C05-）就不重複寫；沒有併入的舊代號也留空白（使用者 261127「照建議改」） */
-        tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace" title="'+(oldTxt?'2025 以前用的兩段代號，併到這一列一起看':'')+'">'+(oldTxt?facEsc(oldTxt):'')+'</td>');
+        tr.insertAdjacentHTML('beforeend','<td style="'+td+';font-family:Consolas,monospace;white-space:nowrap" title="'+(oldTxt?'2025 以前用的兩段代號，併到這一列一起看':'')+'">'+(oldTxt?facEsc(oldTxt):'')+'</td>');
       } else { if(S.mergeNote)tr.querySelectorAll('span').forEach(x=>{ if(/^×\d+$/.test(x.textContent.trim()))x.remove(); });   /* V129-124 */ { const tw=document.createTreeWalker(tr,NodeFilter.SHOW_TEXT); let tn; while((tn=tw.nextNode()))tn.nodeValue=c5D(tn.nodeValue); }   /* V129-121：明細裡的係數代號也不顯示 -01 */ const c0=tr.cells[0]; if(c0)c0.colSpan=3; [...tr.cells].forEach(c=>{ c.style.whiteSpace='normal'; c.style.wordBreak='break-all'; }); tr.querySelectorAll('span').forEach(x=>{ if(x.style.whiteSpace==='nowrap')x.style.whiteSpace='normal'; });   /* 年度欄比原本窄，明細裡的代號與 10 位數字要能換行，不然會疊在一起 */ tr.insertAdjacentHTML('beforeend','<td></td>'); }
       body+=tr.outerHTML; });
     body+=pend;
@@ -5578,9 +5605,9 @@ function facC05Render(code){
   let h='<div class="ftitle" style="margin-bottom:2px">'+title+'<span class="fmini" style="margin-left:8px">係數（大類 × 處理方式 × 區域 × 年度）·唯讀</span></div>'
     +'<div class="msg" style="background:#fff6dc;border:1px solid #f0cf7a;border-left:6px solid #d99a00;font-size:14px;margin:6px 0 8px;padding:8px 12px;line-height:1.6">🔗 <b style="color:#7a4f00">這一頁是「處理」的係數；清運車的運輸係數不在這裡</b>——C4／C5／C9 共用同一張運輸係數表，在「C04 上游運輸」維護。<br>代號＝C05-〔大類〕〔處理方式〕-〔小分類〕（例 C05-E07-03 汙水廢水·汙水處理（金屬酸洗廢水））。系統查係數先找廠區所在區域的條目，沒有才用 ALL（全區域通用）。2025 以前用的兩段代號併到新代號的（例 C05-E10 併進 C05-E07-03），列在最右邊「併入的舊代號」欄，跟新代號一樣的不重複寫；已申報年度的資料與數值都沒有改，只是排到新代號這一列一起看。</div>'
     +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:12px 0 4px">一、代號總表（大類 × 處理方式）<span class="fmini" style="font-weight:400;margin-left:8px">'+maxY+' 年係數庫有條目的代號；點代號跳到下面那一列</span></div>'+mx
-    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）'+' <button type="button" class="sec fc5srcT" onclick="fc5SrcTog(event)" title="每一列下面那一行出處與選用原因：全部顯示或摺起（點一列 ▸ 展開時，那一列的也會一起打開）" style="font-size:12px;padding:3px 10px;margin-left:6px">'+(window.FC5SRC?'出處·選用原因：摺起':'出處·選用原因：顯示')+'</button>'+((typeof facC05AddCan==='function'&&facC05AddCan())?' <button type="button" class="sec" onclick="facC05AddOpen()" title="新增一條營運廢棄物的係數條目（只有系統管理看得到；新條目是「待確認」）" style="margin-left:12px;font-size:12.5px;font-weight:700;padding:2px 12px">＋ 新增係數條目</button>':'')+'</div>'
+    +'<div style="font-size:15px;font-weight:800;color:var(--d);border-left:5px solid var(--p);padding-left:8px;margin:14px 0 4px">二、係數總表（每個代號 × 區域 × 年度）'+' <button type="button" class="sec fc5srcT" onclick="fc5SrcTog(event)" title="每一列下面那一行出處與選用原因：全部顯示或摺起（點一列 ▸ 展開時，那一列的也會一起打開）" style="font-size:12px;padding:3px 10px;margin-left:6px">'+(window.FC5SRC?'出處·選用原因：摺起':'出處·選用原因：顯示')+'</button>'+((typeof facC05AddCan==='function'&&facC05AddCan())?' <button type="button" class="sec" onclick="facC05AddOpen()" title="新增一條營運廢棄物的係數條目（權限頁被勾「新增係數條目」的人才看得到；新條目是「待確認」）" style="margin-left:12px;font-size:12.5px;font-weight:700;padding:2px 12px">＋ 新增係數條目</button>':'')+'</div>'
     +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px;line-height:1.65">一列＝一個代號在一個區域；年度欄是那一年的<b>合成當量</b>（kgCO₂e／公噸；尾數的 0 不顯示，滑鼠停在數字上或展開明細看完整 10 位），空白（—）＝那一年係數庫沒有這一條。點一列（▸）展開明細（各年係數代號、適用廠區、來源），表頭可以「全部展開」。🟡＝跟前一年不同。每一列的出處與選用原因（取最後一個年度那一條的備註）預設摺起；點一列（▸）展開時會一起打開，標題旁「出處·選用原因：顯示」按鈕可以全部打開。</div>';
-  h+='<table class="fsm fsfit" style="width:100%;min-width:'+(100+117+108+(YS.length+1)*90+36)+'px;table-layout:fixed;font-size:12.5px"><colgroup><col style="width:100px"><col style="width:117px"><col style="width:108px">'+YS.map(()=>'<col>').join('')+'<col style="width:90px"></colgroup>'
+  h+='<table class="fsm fsfit" style="width:100%;min-width:'+(100+117+108+(YS.length-1)*88+132+106)+'px;table-layout:fixed;font-size:12.5px"><colgroup><col style="width:100px"><col style="width:117px"><col style="width:108px">'+YS.map(()=>'<col>').join('')+'<col style="width:106px"></colgroup>'
     +'<thead><tr><th style="text-align:left">代號<a href="javascript:void(0)" class="fsmall" onclick="fsmAll(event)" title="展開或收起每一列的明細" style="font-weight:400;font-size:11px;margin-left:6px;color:inherit;text-decoration:underline">'+(FSM_ALL?'全部收合':'全部展開')+'</a></th><th style="text-align:left">處理方式</th><th style="text-align:left">區域</th>'
     +YS.map(y=>'<th style="text-align:right">'+y+((typeof frevHdr==='function')?frevHdr(mAll,y):'')+'</th>').join('')
     +'<th style="text-align:left;white-space:nowrap" title="2025 以前用的兩段代號；跟新代號一樣的不重複寫">併入的舊代號</th></tr></thead><tbody>'+body+'</tbody></table>'   /* V129-132 */
@@ -5590,7 +5617,7 @@ function facC05Render(code){
 /* ══ V129-118：係數庫新增營運廢棄物係數條目（使用者 261124「可以先做系数库新增的功能，但是先不开放给 ESG 操作」、261125「先做」；第一版只做營運廢棄物）。
    只有系統管理看得到按鈕；寫入走資料庫功能 ghg_factor_add_c05（批416），資料庫那一層也只准系統管理、同代號同區域同年度不能重複、已申報年度不能加。
    代號照定案規則由系統組（C05-〔大類〕〔處理方式〕-〔小分類〕），不讓人手打。 ══ */
-function facC05AddCan(){ return !!(typeof curGhgUser!=='undefined'&&curGhgUser&&curGhgUser.role==='admin'); }
+function facC05AddCan(){ return !!(typeof curGhgUser!=='undefined'&&curGhgUser&&(curGhgUser.role==='admin'||curGhgUser.role==='esg')&&curGhgUser.canAdd); }   /* V129-135：改看權限表「新增係數條目」勾選（使用者 261127「照示意做，給不給ESG是我才能勾選 ESG自己不能勾給自己」；資料庫批427 ghg_factor_add_c05 一樣看勾選） */
 function facC05AddYears(){ const d=declMaxY(), st=new Set([d+1]); (FACALL||[]).forEach(f=>{ const y=+f.factor_year; if(isFinite(y)&&y>d&&y<TRIAL_Y)st.add(y); }); return [...st].sort((a,b)=>a-b); }
 function facC05AddOpen(){ if(!facC05AddCan())return;
   const RG=['TW','CN','VN','TH','SG','MY','US','ALL'], o=(v,t)=>'<option value="'+facEsc(v)+'">'+facEsc(t)+'</option>';
