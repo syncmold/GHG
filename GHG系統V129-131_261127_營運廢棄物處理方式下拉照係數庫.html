@@ -12049,7 +12049,7 @@ function wstAdd(big,way,kindName){
       +'</div><div id="w5a_hint" class="fmini" style="margin-top:6px"></div>';
     w5dlg('＋ 新增清運', h, '<button onclick="fuelClose()">取消</button> <button class="pri" onclick="wstAddGo()">加一列</button>');
     setTimeout(()=>{ const bs=document.getElementById('w5a_big'), ws=document.getElementById('w5a_way'), addB=document.querySelector('#s101dlg .foot button.pri');
-      const fill=()=>{ const cur=ws.value; ws.innerHTML=w5WayOptsHtml(bs.value,W5.site,W5.year,cur,true); const so=ws.options[ws.selectedIndex]; if(!so||so.disabled){ const first=[...ws.options].find(o=>!o.disabled&&o.value); ws.value=first?first.value:''; } };   /* V129-131 */
+      const fill=()=>{ const okW=w5WayList(bs.value,W5.site,W5.year).filter(x=>x.ok).map(x=>x.w), cur=okW.indexOf(ws.value)>=0?ws.value:''; ws.innerHTML=w5WayOptsHtml(bs.value,W5.site,W5.year,cur,true); const so=ws.options[ws.selectedIndex]; if(!so||so.disabled){ const first=[...ws.options].find(o=>!o.disabled&&o.value); ws.value=first?first.value:''; } };   /* V129-131：換大類時舊的選擇不帶進新清單（測試頁實測：會殘留「這個大類不能選」那一項） */
       const f=()=>{ const b=bs.value, w=ws.value;
         if(nofacOn(W5.year)&&!w){ document.getElementById('w5a_hint').innerHTML='<span style="color:#b8860b">「'+w5esc(W5BIG[b]||b)+'」在 '+w5esc(w5rg(W5.site))+' '+facY(W5.year)+' 年係數庫還沒有任何處理方式的係數，不能新增。請跟 ESG 小組反應，ESG 補上係數後再新增。</span>'; if(addB)addB.disabled=true; return; }   /* V129-131 */
         const lib=w5lib('C05-'+b+w,W5.site,W5.year); if(addB)addB.disabled=!!(nofacOn(W5.year)&&!lib);   /* V129-131：沒係數不能按「加一列」 */
