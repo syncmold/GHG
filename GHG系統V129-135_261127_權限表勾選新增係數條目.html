@@ -2151,7 +2151,7 @@ function permRender(){
       +'<td style="text-align:left;white-space:normal;padding:4px 6px">'+pills+'</td>'
       +'<td style="text-align:left;white-space:nowrap;padding:4px 6px">'+scopeCell+'</td>'
       +'<td>'+dot(cap&&cap.e)+'</td><td>'+dot(cap&&cap.f)+'</td><td>'+dot(cap&&cap.a)+'</td><td>'+dot(cap&&cap.p)+'</td>'+permAddCell(p,r,rk)   /* V129-135 */
-      +'<td style="text-align:left;font-size:11px;color:var(--g);white-space:nowrap" title="'+(r?facEsc((r.updated_by||'')+' '+String(r.updated_at||'').slice(0,19).replace('T',' ')):'')+'">'+(r?facEsc(String(r.updated_at||'').slice(0,10)):'')+'</td>'
+      +'<td style="text-align:left;font-size:11px;color:var(--g);white-space:nowrap" title="'+(r?facEsc((r.updated_by||'')+' '+permLocalTm(r.updated_at,1)):'')+'">'+(r?facEsc(permLocalTm(r.updated_at)):'')+'</td>'
       +'<td><span id="permst_'+facEsc(p.emp_id)+'" style="font-size:11.5px;color:var(--d);font-weight:700"></span></td></tr>';
     if(rk&&!fixAll&&window._permScopeEdit===p.emp_id){   // V48-2:✎展開廠區權限編輯列(全部+20廠chips,「全部」與單廠互斥)
       const sc=(r&&r.scope)||[p.factory_code];
@@ -2215,9 +2215,10 @@ async function permRevokeOrphan(emp){
 }
 /* ══ V129-135：權限表「新增係數條目」（使用者 261127「照示意做，給不給ESG是我才能勾選 ESG自己不能勾給自己」「4 個系統管理都可以勾」；示意 GHG_權限表_新增係數條目勾選人員_示意_261127）
    只有系統管理看得到權限頁、也只有系統管理寫得進權限表（資料庫 b208 規則）；只開放 ESG小組、系統管理被勾（資料庫批427 觸發器）。勾或取消先確認一次。 ══ */
+function permLocalTm(v,withTime){ if(!v)return ''; const d=new Date(v); if(isNaN(d))return String(v); const p2=x=>String(x).padStart(2,'0'); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+(withTime?(' '+p2(d.getHours())+':'+p2(d.getMinutes())):''); }   /* V129-135：資料庫存的是 UTC（+00:00），直接切字串會差 8 小時（17:25 顯示成 09:25、凌晨的日期差一天）；改照電腦所在時區顯示 */
 function permAddCell(p,r,rk){
   if(!(rk==='esg'||rk==='admin'))return '<td style="text-align:left;white-space:nowrap;color:#bbb;font-size:11.5px" title="只開放 ESG小組、系統管理">不能勾</td>';
-  const on=!!(r&&r.can_add_factor), tip=(r&&r.add_factor_at)?('最後一次'+(on?'勾選':'取消')+'：'+(r.add_factor_by||'')+' '+String(r.add_factor_at).slice(0,19).replace('T',' ')):'還沒勾過';
+  const on=!!(r&&r.can_add_factor), tip=(r&&r.add_factor_at)?('最後一次'+(on?'勾選':'取消')+'：'+(r.add_factor_by||'')+' '+permLocalTm(r.add_factor_at,1)):'還沒勾過';
   return '<td style="text-align:left;white-space:nowrap" title="'+facEsc(tip)+'"><label style="cursor:pointer;font-size:12px"><input type="checkbox"'+(on?' checked':'')+' onclick="event.preventDefault();permSetAdd(\''+facEsc(p.emp_id)+'\','+(on?'false':'true')+')" style="width:auto;vertical-align:middle;margin:0 3px 0 0">'+(on?'可新增':'')+'</label></td>';
 }
 async function permSetAdd(emp,on){
@@ -2480,7 +2481,7 @@ async function ylockRender(){ await ensureYLocks(true);
   const ys=[...new Set(base.concat(Object.keys(YLOCKS).filter(k=>/^\d{4}$/.test(k)).map(Number)))].filter(y=>y!==TRIAL_Y).sort((a,b)=>a-b);   /* V99：只取年份（原本把 _declMax 畫成「NaN 鎖定」）；試打年度另外一顆 */
   let hh='<div style="background:var(--t);border-left:4px solid var(--p);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12.5px"><b style="color:var(--d)">📅 資料年度管理</b>（ESG小組／系統管理·點年度膠囊切換；鎖定＝全員僅供查看，查詢與差異註記不受影響；未列年度預設鎖定）<div style="margin-top:6px">';
   ys.forEach(y=>{const r=YLOCKS[y]||null; const lk=yearLocked(y);
-    hh+='<span onclick="ylockToggle('+y+')" title="'+facEsc(r?((r.updated_by||'')+' '+String(r.updated_at||'').slice(0,10)+(r.note?('·'+r.note):'')):'尚未設定(預設鎖定)')+'" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px;border-radius:12px;font-size:12px;border:1.5px solid '+(lk?'#c0392b':'var(--p)')+';'+(lk?'background:#fdf3f2;color:#c0392b;font-weight:700':'background:var(--p);color:#fff;font-weight:700')+'">'+(lk?'🔒 ':'✏ ')+y+(lk?' 鎖定':' 開放')+'</span>';});
+    hh+='<span onclick="ylockToggle('+y+')" title="'+facEsc(r?((r.updated_by||'')+' '+permLocalTm(r.updated_at)+(r.note?('·'+r.note):'')):'尚未設定(預設鎖定)')+'" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px;border-radius:12px;font-size:12px;border:1.5px solid '+(lk?'#c0392b':'var(--p)')+';'+(lk?'background:#fdf3f2;color:#c0392b;font-weight:700':'background:var(--p);color:#fff;font-weight:700')+'">'+(lk?'🔒 ':'✏ ')+y+(lk?' 鎖定':' 開放')+'</span>';});
   { const tl=yearLocked(TRIAL_Y), tr=YLOCKS[TRIAL_Y]||null;   /* V99：試打年度膠囊 */
     hh+='<span onclick="ylockToggle('+TRIAL_Y+')" title="'+facEsc('試打年度：給 ESG 試用登錄畫面。開放＝各登錄頁年度選單出現「'+TRIAL_Y+' 試打」；係數、匯率一律用 '+declMaxY()+' 年；資料不進任何正式年度，試完由 DTO 整批刪除'+(tr?('（'+(tr.updated_by||'')+' '+String(tr.updated_at||'').slice(0,10)+'）'):''))+'" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px 2px 14px;border-radius:12px;font-size:12px;font-weight:700;border:1.5px dashed #a98bd0;'+(tl?'background:#faf7fd;color:#7a5aa6':'background:#6b3fa0;color:#fff')+'">🧪 '+TRIAL_Y+' 試打 '+(tl?'鎖定':'開放')+'</span>'; }
   hh+='<span onclick="ylockAdd()" title="預建下一個年度(鎖定狀態,要用時再點開)" style="cursor:pointer;display:inline-block;padding:3px 13px;margin:2px 4px;border-radius:12px;font-size:12px;border:1.5px dashed var(--g);color:var(--g)">＋ 新增年度</span>';
