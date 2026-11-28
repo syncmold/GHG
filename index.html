@@ -299,6 +299,7 @@ tr[data-gcat="範疇三"]>td:first-child,tr[data-gcat^="C"]>td:first-child{box-s
 #prog table.pgt tr:first-child th.grp:nth-child(2){box-shadow:inset 0 -3px 0 var(--s1)}#prog table.pgt tr:first-child th.grp:nth-child(3){box-shadow:inset 0 -3px 0 var(--s2)}#prog table.pgt tr:first-child th.grp:nth-child(4){box-shadow:inset 0 -3px 0 var(--s3)}
 </style><style id="mlinkcss">/* V129-58-1：上表 A／B 欄＝下表 A／B 欄 */table.mlink>thead>tr>th:nth-child(2),table.mlink>thead>tr>th:nth-child(3){background:#E6DFF7!important}table.mlink>tbody>tr:not(.tot):not([style])>td:nth-child(2),table.mlink>tbody>tr:not(.tot):not([style])>td:nth-child(3){background:#F3EFFC}</style><style id="fchgcss">.fchg{display:inline-block;width:1.35em;text-align:right;font-size:10px}.fchg.off{visibility:hidden}</style>
 <script>/* V129-40-4：🟡＝與前一年不同；每格都留同寬的位置（沒變＝看不見），數字才對齊 */
+function ghgTm(v){ if(v==null||v==='')return ''; const t=String(v); if(!/(Z|[+-]\d\d:?\d\d)$/.test(t))return t.slice(0,16).replace('T',' '); const d=new Date(t); if(isNaN(d))return t.slice(0,16).replace('T',' '); const p2=x=>String(x).padStart(2,'0'); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+' '+p2(d.getHours())+':'+p2(d.getMinutes()); }   /* V129-136：資料庫時間是 UTC（+00:00），照電腦時區顯示到分；沒有時區的字串照舊切字串 */
 function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; }</script>
 <script>/* V89：自動等比縮放。主畫面排版以 1440 寬為準（.wrap max-width 1440）；畫面不夠寬（筆電）就整頁等比縮小，讓筆電看到的排版跟公司大螢幕一樣；大螢幕沿用 V67-4 的放大（≥1680 1.15、≥2200 1.2）；手機（≤768）不縮，走手機版面。--z 給 body zoom 與所有 vh 高度共用（vh 一律除以 --z，否則縮放後高度跟著變小、下方留白）。 */
 (function(){ var BASE=1366; function fz(){   /* V94-8：1475→1366，筆電少縮一點（1920×1200 放大 175% 的筆電原本縮到 0.744 字太小，改後 0.803；1280 會讓電力表放不下） */ var w=window.innerWidth||document.documentElement.clientWidth||BASE; var z=w>=2200?1.2:(w>=1680?1.15:(w>768?Math.min(1,Math.max(0.7,w/BASE)):1)); document.documentElement.style.setProperty('--z',String(Math.round(z*1000)/1000)); } fz(); window.addEventListener('resize',fz); try{ if(window.ResizeObserver)new ResizeObserver(fz).observe(document.documentElement); }catch(e){} })();</script>
@@ -307,7 +308,7 @@ function facChg(on){ return '<span class="fchg'+(on?'':' off')+'">🟡</span>'; 
 <div class="wrap">
   <header>
     <div class="t">GHG 溫室氣體盤查系統</div>
-    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-135</b> · 2026/11/27</div>
+    <div class="s" style="text-align:left"><span class="hdorg">信錦集團 ｜ 數位轉型辦公室（DTO）｜ </span><b>GHG系統V129-136</b> · 2026/11/27</div>
     <div id="lg_chip" style="display:none;margin-left:auto;background:#fff;border:1px solid #dcebe2;border-radius:16px;padding:3px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);white-space:nowrap"></div>
   </header>
 
@@ -619,7 +620,7 @@ const ghgFetch=async(input,init)=>{
   const m=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
   const url=String(typeof input==='string'?input:((input&&input.url)||input||''));
   const isW=/^(POST|PATCH|PUT|DELETE)$/.test(m)&&url.indexOf(SUPABASE_URL+'/rest/v1/')===0&&url.indexOf('/rest/v1/rpc/')<0;
-  if(m==='POST'&&(url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_verify_')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_site_sort_save')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_recalc_apply')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_factor_add_c05')===0   /* V129-118：新增係數條目（批416）要帶登入者憑證；V129-135：資料庫改看權限表勾選（批427） */)   /* V129-105：係數／匯率存檔後自動重算（批395 ghg_recalc_apply）也要帶登入者憑證；原本兩項不變（使用者 261110「存檔後自動重算」） */){   /* V129-79-1：儲存廠區順序也要帶登入者憑證 */   /* V129-41-3：送查證／退回／定稿／撤銷定稿＝只開放登入的人（批261），要帶登入者自己的憑證 */
+  if(m==='POST'&&(url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_verify_')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_site_sort_save')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_recalc_apply')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_factor_add_c05')===0||url.indexOf(SUPABASE_URL+'/rest/v1/rpc/ghg_factor_review_save')===0   /* V129-118：新增係數條目（批416）要帶登入者憑證；V129-135：資料庫改看權限表勾選（批427） */)   /* V129-105：係數／匯率存檔後自動重算（批395 ghg_recalc_apply）也要帶登入者憑證；原本兩項不變（使用者 261110「存檔後自動重算」） */){   /* V129-79-1：儲存廠區順序也要帶登入者憑證 */   /* V129-41-3：送查證／退回／定稿／撤銷定稿＝只開放登入的人（批261），要帶登入者自己的憑證 */
     const tk=await ghgJwtW();
     if(!tk){ const msg='沒有登入憑證（登入逾時，或這個分頁的登入已失效），這次的送查證／退回／定稿沒有送出——請登出後用工號＋密碼重新登入。';
       ghgWriteWarn(msg); return new Response(JSON.stringify({code:'GHG401',message:msg,details:null,hint:null}),{status:401,headers:{'Content-Type':'application/json'}}); }
@@ -2366,7 +2367,7 @@ function gNoteOpen(site,cat,tr){
   td.style.cssText='text-align:left;background:#fffbe6;padding:8px 14px';
   const _cn=lgCanNote();   // V51:非ESG/管理=唯讀檢視註記
   td.innerHTML='<b style="font-size:12px;color:var(--d)">📝 差異原因（'+facEsc(site)+'·'+GNYR+'·'+facEsc(cat==='TOTAL'?'總量':cat)+'）</b> '
-    +(n?('<span style="font-size:11px;color:var(--g)">最後更新：'+facEsc((n.updated_by||'')+' '+String(n.updated_at||'').slice(0,16).replace('T',' '))+'</span>'):'<span style="font-size:11px;color:var(--g)">（尚無註記）</span>')
+    +(n?('<span style="font-size:11px;color:var(--g)">最後更新：'+facEsc((n.updated_by||'')+' '+ghgTm(n.updated_at||''))+'</span>'):'<span style="font-size:11px;color:var(--g)">（尚無註記）</span>')
     +(_cn?('<br><textarea id="gnotetxt" style="width:70%;min-height:46px;font-size:12.5px;margin-top:4px" placeholder="差異原因說明（如：查證清冊與集團申報不一致，已提報ESG確認權威版）">'+(n?facEsc(n.note):'')+'</textarea> '
     +'<button onclick="gNoteSave(\''+facEsc(site)+'\',\''+facEsc(cat)+'\')" style="vertical-align:top">儲存</button> '
     +(n?('<button class="sec" onclick="gNoteDel(\''+facEsc(site)+'\',\''+facEsc(cat)+'\')" style="vertical-align:top">刪除</button> '):'')):('<div style="margin-top:4px;font-size:12.5px;white-space:pre-wrap">'+(n?facEsc(n.note):'（尚無註記）')+'</div><span style="font-size:11px;color:var(--g)">（差異原因由 ESG 小組／系統管理維護）</span> '))
@@ -4056,7 +4057,7 @@ window.c12MapLog=async function(){ const box=document.getElementById('c12mlog');
   if(error){ box.innerHTML='<div class="msg err">修改紀錄讀取失敗：'+facEsc(error.message||error)+'</div>'; return; }
   const zh=c=>c?(C12_ENZH[c]||c):'未定';
   box.innerHTML='<div style="margin-top:10px;font-weight:700;color:var(--d)">修改紀錄（最近 50 筆；批265 匯入草稿的不列）</div>'+((data||[]).length?'':'<div class="fmini">還沒有人改過。</div>')+'<table class="fsm" style="width:100%;table-layout:fixed;font-size:12px"><colgroup><col style="width:15%"><col style="width:20%"><col style="width:20%"><col></colgroup><thead><tr><th style="text-align:left">時間</th><th style="text-align:left">誰</th><th style="text-align:left">材質</th><th style="text-align:left">改了什麼</th></tr></thead><tbody>'
-    +(data||[]).map(r=>'<tr><td style="text-align:left">'+facEsc(String(r.at||'').slice(0,16).replace('T',' '))+'</td><td style="text-align:left;white-space:normal">'+facEsc(r.by_email||'')+'</td><td style="text-align:left;white-space:normal">'+facEsc(r.material||r.mat_key||'')+'</td><td style="text-align:left;white-space:normal">'+facEsc(r.action||'')+'：'+zh(r.from_class)+' → '+zh(r.to_class)+(r.note?'（'+facEsc(r.note)+'）':'')+'</td></tr>').join('')+'</tbody></table>'; };
+    +(data||[]).map(r=>'<tr><td style="text-align:left">'+facEsc(ghgTm(r.at||''))+'</td><td style="text-align:left;white-space:normal">'+facEsc(r.by_email||'')+'</td><td style="text-align:left;white-space:normal">'+facEsc(r.material||r.mat_key||'')+'</td><td style="text-align:left;white-space:normal">'+facEsc(r.action||'')+'：'+zh(r.from_class)+' → '+zh(r.to_class)+(r.note?'（'+facEsc(r.note)+'）':'')+'</td></tr>').join('')+'</tbody></table>'; };
 window.c12GoMap=async function(){ try{ FAC_TRACE=null; }catch(e){} window._facLoaded=true; document.querySelector('.tab[data-t="fac"]').click(); FAC_CUR='C12MAP'; await facMode('src'); };
 function c12SrcCls(s){ const t=String(s==null?'':s).trim().toLowerCase(); if(!t)return null; const w=t.split(/[ :：]/)[0]; if(w==='metal'||w==='al+zn'||w==='al'||t==='金屬'||t==='金属')return 'M'; if(w==='plastic'||w==='plastics'||t==='塑膠'||t==='塑胶')return 'P'; if(w==='paper'||t==='紙'||t==='纸'||t==='紙類')return 'R'; if(w==='other'||w==='others'||t==='其他')return 'O'; return null; }   /* 原檔自己的大類欄 → M／P／R／O（批266 src_class） */
 function c12TreatOf(k,v){ v=+v; if(!isFinite(v))return '—'; if(Math.abs(v)<1e-9)return '記 0'; if(Math.abs(v-6.41061)<1e-4)return '回收／燃燒'; if(Math.abs(v-8.88386)<1e-4)return k==='R'?'堆肥':'掩埋'; if(Math.abs(v-1164.39015)<1e-3)return '掩埋'; return '其他值'; }   /* 清冊用的係數 → 處理方式（UK 2024：回收＝燃燒＝6.41061 分不出） */
@@ -10310,7 +10311,7 @@ function trnRvShow(rv){   /* 這一類審核還在「填寫中」，或正是因
   if(E&&E.at&&!E.at[k]&&typeof window.esLoad==='function'){ if(!TRV_ESW[k]){ TRV_ESW[k]=1; window.esLoad(F.site,F.year).then(()=>{ if(E.at[k]&&F.site+'|'+F.year===k&&document.getElementById('s101wrap'))trnRender(); }).catch(()=>{}); } return false; }   /* 審核狀態還沒讀到：先不標，讀到再畫一次（讀不到就不標） */
   const r=(typeof window.esRow==='function')?window.esRow(F.site,F.year,F.cat):null; if(!r)return true;
   if(r.status==='returned')return String(r.review_note||'').indexOf('運輸規則第 '+rv.ver+' 版套用')===0; return r.status==='draft'; }
-function trnRvTag(rv){ if(!trnRvShow(rv))return ''; const tip='ESG 套用運輸規則第 '+rv.ver+' 版時改了這一列：'+(rv.from||'—')+' → '+rv.to+'（'+(typeof trnrT==='function'?trnrT(rv.at):String(rv.at||'').slice(0,16).replace('T',' '))+'）'+(rv.why?'；原因：'+rv.why:'')+(rv.how?'；'+rv.how:'')+'。請確認後再送出審核。';
+function trnRvTag(rv){ if(!trnRvShow(rv))return ''; const tip='ESG 套用運輸規則第 '+rv.ver+' 版時改了這一列：'+(rv.from||'—')+' → '+rv.to+'（'+(typeof trnrT==='function'?trnrT(rv.at):ghgTm(rv.at||''))+'）'+(rv.why?'；原因：'+rv.why:'')+(rv.how?'；'+rv.how:'')+'。請確認後再送出審核。';
   return '<span class="trtg rv" title="'+esc(tip)+'">第'+esc(rv.ver)+'版改：'+esc(rv.from||'—')+'→'+esc(rv.to)+'</span>'; }
 function trnLcAuto(rt,k){   /* C09 這一段照規則（不看人工改）：TRNR.classifyLeg ＋ srcTok（存檔用的來源字） */
   const r=TRNR.classifyLeg({term:rt.tr,leg:k,site:F.site,custName:rt.nm});
@@ -14652,7 +14653,7 @@ function frevRender(){
   L.forEach(f=>{
     const ct=frevCat(f), it=frevItem(f), v=frevEq(f.factor_id), src=(FACALL||[]).find(x=>x.factor_id===f.copied_from), pv=src?frevEq(src.factor_id):null;
     const chg=(v!=null&&pv!=null&&Math.abs(v-pv)>1e-12), done=f.review_status==='已確認', pick=!!(f.review_note&&!done);
-    const st=done?'<span style="'+pillS('#e3f4ea','#1e6b43','#bfe3cd')+'" title="'+facEsc((f.reviewed_by||'')+' '+String(f.reviewed_at||'').slice(0,16).replace('T',' '))+'">已確認</span><div style="font-size:10.5px;color:var(--g);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+facEsc(String(f.reviewed_by||'').split(' ').slice(-1)[0])+' '+facEsc(String(f.reviewed_at||'').slice(5,10).replace('-','/'))+'</div>'
+    const st=done?'<span style="'+pillS('#e3f4ea','#1e6b43','#bfe3cd')+'" title="'+facEsc((f.reviewed_by||'')+' '+ghgTm(f.reviewed_at||''))+'">已確認</span><div style="font-size:10.5px;color:var(--g);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+facEsc(String(f.reviewed_by||'').split(' ').slice(-1)[0])+' '+facEsc(String(f.reviewed_at||'').slice(5,10).replace('-','/'))+'</div>'
                  :'<span style="'+pillS('#fff3cd','#856404','#ffe69c')+'">待確認</span>';
     const act=can?((done?'':'<a href="javascript:void(0)" onclick="frevConfirm(\''+facEsc(f.factor_id)+'\')" style="font-weight:700">確認</a> ')+'<a href="javascript:void(0)" onclick="frevOpen(\''+facEsc(f.factor_id)+'\')">修改</a>')
                  :'<a href="javascript:void(0)" onclick="frevOpen(\''+facEsc(f.factor_id)+'\')">看</a>';
@@ -14721,7 +14722,7 @@ async function frevOpen(fid){
   frevDlgInit(); const d=document.getElementById('frevdlg');
   const ro=can?'':' readonly style="background:#f3f6f5"';
   let h='<div class="card"><h3>'+facEsc(ct.c+' '+ct.n)+'　'+facEsc(frevCode(f))+' '+facEsc(frevItem(f))+'　<span style="font-size:12px;font-weight:400;color:'+(done?'#1e6b43':'#856404')+'">'+(done?'已確認':'待確認')+'</span></h3>'
-    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px" title="'+facEsc('條目 '+f.factor_id+(src?'（前一年 '+src.factor_id+'）':''))+'">'+[src?'由前一年 '+facEsc(frevCode(src))+' 照抄':'',frevSites(f)?facEsc(frevSites(f)):'',(done&&f.reviewed_by)?'確認：'+facEsc(f.reviewed_by)+' '+facEsc(String(f.reviewed_at||'').slice(0,16).replace('T',' ')):''].filter(Boolean).join('｜')+'</div>'   /* V129-58-2：只寫新編碼，舊條目代號放滑鼠提示 */;
+    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px" title="'+facEsc('條目 '+f.factor_id+(src?'（前一年 '+src.factor_id+'）':''))+'">'+[src?'由前一年 '+facEsc(frevCode(src))+' 照抄':'',frevSites(f)?facEsc(frevSites(f)):'',(done&&f.reviewed_by)?'確認：'+facEsc(f.reviewed_by)+' '+facEsc(ghgTm(f.reviewed_at||'')):''].filter(Boolean).join('｜')+'</div>'   /* V129-58-2：只寫新編碼，舊條目代號放滑鼠提示 */;
   if(f.review_note)h+='<div class="msg" style="background:#fdecea;color:#8a1c1c;font-size:12px;margin:0 0 8px;line-height:1.6;white-space:normal;overflow-wrap:anywhere">⚠ '+facEsc(f.review_note)+'</div>';
   h+='<table><colgroup><col style="width:14%"><col style="width:26%"><col style="width:22%"><col style="width:14%"><col style="width:24%"></colgroup><thead><tr><th>氣體</th><th style="text-align:right">'+f.factor_year+' 係數</th><th>單位</th><th style="text-align:right">GWP</th><th style="text-align:right">前一年</th></tr></thead><tbody>';
   const sg=src?frevGases(src.factor_id):[];
@@ -14732,6 +14733,7 @@ async function frevOpen(fid){
       +'<td style="text-align:right;color:var(--g)">'+(p?facEsc(frevIn(p.factor_value))+(p.gwp!=null&&+p.gwp!==1?' ×'+facEsc(frevIn(p.gwp)):''):'—')+'</td></tr>'; });
   h+='<tr style="background:#f3f6f5"><td colspan="2" style="text-align:right"><b>合成當量 <span id="frev_eq">'+frevNum(frevEq(fid))+'</span></b></td><td style="color:var(--g)">'+facEsc(frevUnit(fid))+'</td><td></td><td style="text-align:right;color:var(--g)">'+(src?frevNum(frevEq(src.factor_id)):'—')+'</td></tr></tbody></table>';
   h+='<div style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12.5px"><b style="white-space:nowrap">來源</b><input id="frev_src" class="l" value="'+facEsc(f.factor_source||'')+'"'+ro+' oninput="frevLive(\''+facEsc(fid)+'\')"></div>';
+  if(can)h+='<div style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:12.5px"><b style="white-space:nowrap;padding-top:3px">改值原因 <span style="color:#c0392b">*</span></b><div style="flex:1"><input id="frev_why" class="l" maxlength="500" placeholder="例：顧問提供新係數（寫出處與版本），ESG 確認"><div style="font-size:11px;color:var(--g);margin-top:2px">有改係數、GWP 或來源才要填（至少 5 個字）；寫清楚為什麼改、根據什麼。'+(done?'改回待確認可以寫為什麼要重新確認（選填）。':'')+'</div></div></div>';   /* V129-136：C27 ⑨ 改值原因 */
   if(alts.length){
     h+='<div style="margin-top:10px;font-size:12.5px"><b>前一年的各版本</b>'+(can?'<span style="color:var(--g);font-size:11.5px">　按「套用」會把這版的值和來源填到上面，再按「儲存並確認」</span>':'')+'</div>'
       +'<table style="margin-top:4px"><colgroup><col style="width:22%"><col style="width:16%"><col style="width:40%"><col style="width:22%"></colgroup><thead><tr><th>條目</th><th style="text-align:right">係數 EF<br><span class="fmini" style="font-weight:400">合成當量</span></th><th>用在／來源</th><th></th></tr></thead><tbody>';
@@ -14758,7 +14760,9 @@ async function frevLoadLog(fid){
     if(error){ el.textContent=/change_log|schema cache|does not exist/i.test(error.message||'')?'（修改紀錄要等批209 SQL 跑完才有）':'（讀不到修改紀錄：'+error.message+'）'; return; }
     if(!data||!data.length){ el.textContent='還沒有修改紀錄。'; return; }
     const fv=(r,v)=>v==null?'（空）':((r.field==='係數'||r.field==='GWP')?frevIn(v):v);   /* V108-2：數值也照 12 位有效數字顯示 */
-    el.innerHTML=data.map(r=>facEsc(String(r.changed_at||'').slice(0,16).replace('T',' '))+'　'+facEsc(r.changed_by||'')+'　'+facEsc((r.gas_code?r.gas_code+' ':'')+(r.field||''))+'：'+facEsc(fv(r,r.old_value))+' → '+facEsc(fv(r,r.new_value))).join('<br>');
+    const why=r=>r.reason==null?'<span style="color:#9aa9a1">（以前的紀錄沒有原因）</span>':(String(r.reason).trim()?facEsc(r.reason):'<span style="color:#9aa9a1">—</span>');   /* V129-136：NULL＝批428 以前的紀錄；空字串＝這次沒填 */
+    el.innerHTML='<table style="margin-top:2px;font-size:11.5px"><colgroup><col style="width:15%"><col style="width:21%"><col style="width:34%"><col style="width:30%"></colgroup><thead><tr><th style="text-align:left">時間</th><th style="text-align:left">誰</th><th style="text-align:left">改了什麼</th><th style="text-align:left">原因</th></tr></thead><tbody>'
+      +data.map(r=>{ const w=(r.gas_code?r.gas_code+' ':'')+(r.field||'')+'：'+fv(r,r.old_value)+' → '+fv(r,r.new_value); return '<tr><td style="vertical-align:top;text-align:left;white-space:nowrap">'+facEsc(ghgTm(r.changed_at||''))+'</td><td style="vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere">'+facEsc(r.changed_by||'')+'</td><td style="vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere" title="'+facEsc(w)+'"><div style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">'+facEsc(w)+'</div></td><td style="vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere">'+why(r)+'</td></tr>'; }).join('')+'</tbody></table>';   /* V129-136：時間／誰／改了什麼／原因 */
   }catch(e){ el.textContent='（讀不到修改紀錄）'; }
 }
 function frevApply(fid,aid){
@@ -14777,7 +14781,10 @@ async function frevConfirmDlg(fid){ const f=(FACALL||[]).find(x=>x.factor_id===f
   frevPendAdj(f.factor_year,-1); frevClose(); frevRender(); }
 async function frevUnconfirm(fid){ const f=(FACALL||[]).find(x=>x.factor_id===fid); if(!f)return;
   if(!confirm('把 '+frevCode(f)+' 改回「待確認」？'))return;
-  const e=await frevPatch(fid,{review_status:'待確認',reviewed_by:frevWho(),reviewed_at:new Date().toISOString()});
+  const why=String((document.getElementById('frev_why')||{}).value||'').trim();   /* V129-136：改回待確認原因選填，跟狀態一起寫 */
+  const {error:ue}=await sb.rpc('ghg_factor_review_save',{p_factor_id:fid,p_status:'待確認',p_who:frevWho(),p_reason:why});
+  const e=ue?('資料庫回錯：'+ue.message):'';
+  if(!e){ const patch={review_status:'待確認',reviewed_by:frevWho(),reviewed_at:new Date().toISOString()}; Object.assign(f,patch); if(typeof FMETA!=='undefined'&&FMETA&&FMETA[fid])Object.assign(FMETA[fid],patch); }
   if(e){ const m=document.getElementById('frev_msg'); if(m)m.textContent='沒有成功：'+e; return; }
   frevPendAdj(f.factor_year,1); frevClose(); frevRender(); }
 async function frevSave(fid){
@@ -14792,20 +14799,21 @@ async function frevSave(fid){
     if(frevIn(vs)!==frevIn(g.factor_value)||frevIn(ws)!==frevIn(g.gwp))ups.push({g,v,w}); }   /* V108-1：沒動的氣體不寫（不會被存成 12 位四捨五入值） */
   const ns=String((document.getElementById('frev_src')||{}).value||'').trim();
   if(!ups.length&&ns===String(f.factor_source||'').trim()){ msg('沒有改任何東西；值不變請按「確認（值不變）」。'); return; }
-  if(!confirm('儲存並確認 '+frevCode(f)+'？\n\n'+ups.map(u=>(u.g.gas_code||'')+'：'+frevIn(u.g.factor_value)+(u.g.gwp!=null?' ×'+frevIn(u.g.gwp):'')+' → '+frevIn(u.v)+(u.w!=null?' ×'+frevIn(u.w):'')).join('\n')+(ns!==String(f.factor_source||'').trim()?'\n來源：'+(f.factor_source||'（空）')+' → '+ns:'')+'\n\n合成當量 '+frevNum(frevEq(fid))+' → '+((document.getElementById('frev_eq')||{}).textContent||'')))return;
+  const why=String((document.getElementById('frev_why')||{}).value||'').trim();   /* V129-136：有改就要寫原因（資料庫 ghg_factor_review_save 也擋） */
+  if(why.length<5){ msg(why?'改值原因至少 5 個字。':'有改係數，請填改值原因再存。'); const wi=document.getElementById('frev_why'); if(wi)wi.focus(); return; }
+  if(!confirm('儲存並確認 '+frevCode(f)+'？\n\n'+ups.map(u=>(u.g.gas_code||'')+'：'+frevIn(u.g.factor_value)+(u.g.gwp!=null?' ×'+frevIn(u.g.gwp):'')+' → '+frevIn(u.v)+(u.w!=null?' ×'+frevIn(u.w):'')).join('\n')+(ns!==String(f.factor_source||'').trim()?'\n來源：'+(f.factor_source||'（空）')+' → '+ns:'')+'\n\n合成當量 '+frevNum(frevEq(fid))+' → '+((document.getElementById('frev_eq')||{}).textContent||'')+'\n\n改值原因：'+why))return;
   const rcB=frevGases(fid).map(g=>({gas:g.gas_code,v:+g.factor_value,g:g.gwp==null?null:+g.gwp}));   /* V129-105：改前的值（自動重算用） */
   const rcGo=async()=>{ const newL=frevGases(fid).map(g=>({gas:g.gas_code,v:+g.factor_value,g:g.gwp==null?null:+g.gwp}));
     if(rcB.every((o,i)=>newL[i]&&o.v===newL[i].v&&o.g===newL[i].g))return '';
     msg('係數已存，自動重算用到這一條的明細中…'); const r=await rc5Run('fac',{fid,fy:f.factor_year,code:frevCode(f),oldL:rcB,newL}); return rc5Text(r); };
-  for(const u of ups){ if(u.g.id==null){ msg('氣體列缺編號，請重新整理頁面再試'); return; }
-    const {error,count}=await sb.from('ghg_emission_factor_gases').update({factor_value:u.v,gwp:u.w},{count:'exact'}).eq('id',u.g.id);
-    if(error||count!==1){ const rcT=await rcGo(); msg((u.g.gas_code||'')+' 沒有存進去：'+(error?error.message:'一筆都沒改到（可能沒有權限或年度已鎖住）')+'；其他還沒存的也停了。'+(rcT?'\n'+rcT:'')); if(rcT)alert(rcT); return; }
-    u.g.factor_value=u.v; u.g.gwp=u.w; }
-  const was=f.review_status==='已確認';
-  const patch={review_status:'已確認',reviewed_by:frevWho(),reviewed_at:new Date().toISOString()}; if(ns!==String(f.factor_source||'').trim())patch.factor_source=ns;
+  for(const u of ups){ if(u.g.id==null){ msg('氣體列缺編號，請重新整理頁面再試'); return; } }
+  const was=f.review_status==='已確認', srcChg=ns!==String(f.factor_source||'').trim();
+  /* V129-136：改值、狀態、原因由資料庫 ghg_factor_review_save 同一個交易寫進去；任一列沒改到＝整筆取消（原本一列一列存，中途失敗會存一半） */
+  const {data:sv,error:se}=await sb.rpc('ghg_factor_review_save',{p_factor_id:fid,p_status:'已確認',p_who:frevWho(),p_reason:why,p_gases:ups.map(u=>({id:u.g.id,factor_value:u.v,gwp:u.w})),p_source:srcChg?ns:null});
+  if(se||!sv){ msg('沒有存進去（整筆取消，什麼都沒改）：'+(se?se.message:'資料庫沒有回應')); return; }
+  ups.forEach(u=>{ u.g.factor_value=u.v; u.g.gwp=u.w; });
+  { const patch={review_status:'已確認',reviewed_by:frevWho(),reviewed_at:new Date().toISOString()}; if(srcChg)patch.factor_source=ns; Object.assign(f,patch); if(typeof FMETA!=='undefined'&&FMETA&&FMETA[fid])Object.assign(FMETA[fid],patch); }
   const rcT=await rcGo();   /* V129-105：使用者 261110「存檔後自動重算」 */
-  const e=await frevPatch(fid,patch);
-  if(e){ msg('係數值已存，但「已確認」沒有寫進去：'+e+(rcT?'\n'+rcT:'')); if(rcT)alert(rcT); return; }
   if(!was)frevPendAdj(f.factor_year,-1);
   frevClose(); frevRender(); if(rcT)setTimeout(()=>alert(rcT),50);
 }
@@ -14819,7 +14827,7 @@ function frevFidsAct(ids,y){ try{ if(!(+y>declMaxY())||(typeof trialY==='functio
   const fs=ids.map(id=>(FACALL||[]).find(z=>z.factor_id===id)).filter(f=>f&&f.review_status&&+f.factor_year===+y); if(!fs.length)return '';
   const can=frevCan(y), A=(fn,fid,t,b2)=>'<a href="javascript:void(0)" onclick="event.stopPropagation();'+fn+'(&#39;'+facEsc(fid)+'&#39;)" style="'+(b2?'font-weight:700;':'')+'margin-left:6px">'+t+'</a>';
   return '<div onclick="event.stopPropagation()" style="font-size:11px;font-weight:400;margin-top:2px;white-space:nowrap;cursor:default">'+fs.map(f=>{ const done=f.review_status==='已確認';
-    const st=done?'<span style="color:#1e6b43" title="'+facEsc((f.reviewed_by||'')+' '+String(f.reviewed_at||'').slice(0,16).replace('T',' '))+'">✓ 已確認</span>':'<span style="color:#856404">待確認</span>';
+    const st=done?'<span style="color:#1e6b43" title="'+facEsc((f.reviewed_by||'')+' '+ghgTm(f.reviewed_at||''))+'">✓ 已確認</span>':'<span style="color:#856404">待確認</span>';
     return (fs.length>1?'<span style="color:var(--g)">'+facEsc(f.factor_id)+'</span> ':'')+st+(can?(done?'':A('frevConfirm',f.factor_id,'確認',1))+A('frevOpen',f.factor_id,'修改'):A('frevOpen',f.factor_id,'看')); }).join('<br>')+'</div>'; }catch(e){ return ''; } }
 /* 係數矩陣：已開帳的年度欄標「開帳·待確認 n／已確認」 */
 function frevHdr(m,y){ try{ if(!(+y>declMaxY())||(typeof trialY==='function'&&trialY(y)))return ''; const L=(m.facs||[]).filter(f=>f.review_status&&+f.factor_year===+y); if(!L.length)return ''; const p=L.filter(f=>f.review_status!=='已確認').length;
@@ -14844,7 +14852,7 @@ function frevFxHtml(can){
   h+='<table style="width:100%;table-layout:fixed;font-size:12.5px;border-collapse:collapse;margin-bottom:10px"><colgroup><col style="width:14%"><col style="width:12%"><col style="width:14%"><col style="width:12%"><col style="width:31%"><col style="width:10%"><col style="width:7%"></colgroup>'
     +'<thead><tr style="background:#eef5f1">'+['種類','幣別',FREV.y+'（1 美元＝）','前一年','來源','狀態',''].map((t,i)=>'<th style="padding:4px 6px;text-align:'+((i===2||i===3)?'right':'left')+';white-space:nowrap">'+t+'</th>').join('')+'</tr></thead><tbody>';
   L.forEach(r=>{ const pv=frevFxFind(r.copied_from), v=frevFxPer(r), p=frevFxPer(pv), chg=(v!=null&&p!=null&&Math.abs(v-p)>1e-9), done=r.review_status==='已確認';
-    const st=done?'<span style="'+pillS('#e3f4ea','#1e6b43','#bfe3cd')+'" title="'+facEsc((r.reviewed_by||'')+' '+String(r.reviewed_at||'').slice(0,16).replace('T',' '))+'">已確認</span>':'<span style="'+pillS('#fff3cd','#856404','#ffe69c')+'">待確認</span>';
+    const st=done?'<span style="'+pillS('#e3f4ea','#1e6b43','#bfe3cd')+'" title="'+facEsc((r.reviewed_by||'')+' '+ghgTm(r.reviewed_at||''))+'">已確認</span>':'<span style="'+pillS('#fff3cd','#856404','#ffe69c')+'">待確認</span>';
     const act=can?((done?'':'<a href="javascript:void(0)" onclick="frevFxConfirm(\''+facEsc(r.id)+'\')" style="font-weight:700">確認</a> ')+'<a href="javascript:void(0)" onclick="frevFxOpen(\''+facEsc(r.id)+'\')">修改</a>'):'<a href="javascript:void(0)" onclick="frevFxOpen(\''+facEsc(r.id)+'\')">看</a>';
     h+='<tr style="border-bottom:1px solid #e5ede9">'
       +'<td style="text-align:left;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+facEsc(r.rate_type||'')+'</td>'
@@ -14873,7 +14881,7 @@ function frevFxOpen(id){
   frevDlgInit(); const d=document.getElementById('frevdlg');
   const ro=can?'':' readonly';
   let h='<div class="card"><h3>💱 '+facEsc(r.rate_type||'')+'　'+facEsc(r.currency)+' '+facEsc(FREV_CUR[r.currency]||'')+'·'+facEsc(r.rate_year)+'　<span style="font-size:12px;font-weight:400;color:'+(done?'#1e6b43':'#856404')+'">'+(done?'已確認':'待確認')+'</span></h3>'
-    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px">適用：'+facEsc(r.applicable_scope||'—')+(pv?'｜由前一年照抄':'')+(done&&r.reviewed_by?'｜確認：'+facEsc(r.reviewed_by)+' '+facEsc(String(r.reviewed_at||'').slice(0,16).replace('T',' ')):'')+'</div>'
+    +'<div style="font-size:11.5px;color:var(--g);margin-bottom:6px">適用：'+facEsc(r.applicable_scope||'—')+(pv?'｜由前一年照抄':'')+(done&&r.reviewed_by?'｜確認：'+facEsc(r.reviewed_by)+' '+facEsc(ghgTm(r.reviewed_at||'')):'')+'</div>'
     +(r.review_note?'<div class="msg" style="background:#fff8e1;font-size:12px;margin:0 0 8px">'+facEsc(r.review_note)+'</div>':'')
     +'<div style="display:flex;gap:10px;align-items:center;font-size:12.5px;margin:6px 0;white-space:nowrap"><b>1 美元＝</b><input id="frev_fx_v" value="'+facEsc(frevFxNum(frevFxPer(r)))+'"'+ro+' style="width:160px" oninput="frevFxLive(\''+facEsc(r.id)+'\')"><span>'+facEsc(r.currency)+'</span>'
     +'<span style="color:var(--g)">前一年 '+facEsc(frevFxNum(frevFxPer(pv)))+'</span><span id="frev_fx_u" style="color:var(--g)"></span></div>'
@@ -17420,7 +17428,7 @@ body.ghgfocus #src_form .ehead>.fxfocus{background:#1B8A60;border-color:#1B8A60;
   window.esLocked=esLocked;
   function chip(r){
     const who=t=>t?String(t).replace(/@.*/,''):'';
-    const tm=t=>t?String(t).slice(0,16).replace('T',' '):'';
+    const tm=t=>t?ghgTm(t):'';
     const p=(t,bg,fg,bd,ti)=>'<span class="eschip" style="background:'+bg+';color:'+fg+';border-color:'+bd+'" title="'+esc(ti)+'">'+t+'</span>';
     const nd=r&&r.no_data?'（本年沒有：'+esc(r.no_data_reason||'')+'）':'';
     if(!r||(r.status==='draft'&&!r.no_data))return p('✏️ 填寫中','var(--st-fill-bg)','var(--st-fill-fg)','var(--st-fill-bd)','這一類還沒送出。填好了按「📤 送出審核」，ESG 確認後就算通過');
@@ -17583,8 +17591,8 @@ body.ghgfocus #src_form .ehead>.fxfocus{background:#1B8A60;border-color:#1B8A60;
         const st=S[s+'|'+c], a=(A[s]||{})[c], p=(P[s]||{})[c];
         let ti=cname(c)+'　'+fpSiteName(s)+' '+Y+'\n狀態：'+LAB[k]+'\n'+Y+' 年：'+(a?a.n+' 筆、'+(+a.co||0).toFixed(4)+' t':'沒有資料')+'　'+PY+' 年：'+(p?p.n+' 筆、'+(+p.co||0).toFixed(4)+' t':'沒有資料');
         if(st&&st.no_data)ti+='\n本年沒有：'+(st.no_data_reason||'');
-        if(st&&st.submitted_at)ti+='\n送出：'+String(st.submitted_by||'').replace(/@.*/,'')+' '+String(st.submitted_at).slice(0,16).replace('T',' ');
-        if(st&&st.reviewed_at)ti+='\n'+(st.status==='returned'?'退回':'確認')+'：'+String(st.reviewed_by||'').replace(/@.*/,'')+' '+String(st.reviewed_at).slice(0,16).replace('T',' ')+(st.review_note?'　'+st.review_note:'');
+        if(st&&st.submitted_at)ti+='\n送出：'+String(st.submitted_by||'').replace(/@.*/,'')+' '+ghgTm(st.submitted_at);
+        if(st&&st.reviewed_at)ti+='\n'+(st.status==='returned'?'退回':'確認')+'：'+String(st.reviewed_by||'').replace(/@.*/,'')+' '+ghgTm(st.reviewed_at)+(st.review_note?'　'+st.review_note:'');
         if(DC)ti=cname(c)+'　'+fpSiteName(s)+' '+Y+'\n已申報：'+(a?a.n+' 筆、'+(+a.co||0).toFixed(4)+' t':'');
         h+='<td><span class="c '+k+(!DC&&want&&want.indexOf(k)<0?' dim':'')+'" title="'+esc(ti)+'" onclick="progGo(&#39;'+s+'&#39;,&#39;'+c+'&#39;,'+Y+')">'+SYM[k]+'</span></td>'; });
       const all=!DC&&need>0&&ok===need;   /* V129-40-1：整廠通過＝應填的類別全部通過（即時算，不另存；某類退回就自動不是） */
@@ -17596,7 +17604,7 @@ body.ghgfocus #src_form .ehead>.fxfocus{background:#1B8A60;border-color:#1B8A60;
     // 等 ESG 確認清單
     const wl=[]; sites.forEach(s=>CS.forEach(c=>{ if(M[s][c]==='wt')wl.push(S[s+'|'+c]); }));
     wl.sort((a,b)=>String(a.submitted_at||'').localeCompare(String(b.submitted_at||'')));
-    h+='<div class="pg-list"><b>⏳ 等 ESG 確認（'+wl.length+'）</b>'+(wl.length?'<table><thead><tr><th>廠區</th><th>類別</th><th>送出</th><th>時間</th><th></th></tr></thead><tbody>'+wl.map(r=>'<tr><td>'+esc(fpSiteName(r.site_id))+'</td><td>'+esc(cname(r.category_id))+(r.no_data?'（本年沒有：'+esc(r.no_data_reason||'')+'）':'')+'</td><td>'+esc(String(r.submitted_by||'').replace(/@.*/,''))+'</td><td>'+esc(String(r.submitted_at||'').slice(0,16).replace('T',' '))+'</td><td><a href="javascript:void(0)" onclick="progGo(&#39;'+r.site_id+'&#39;,&#39;'+r.category_id+'&#39;,'+Y+')">前往 →</a></td></tr>').join('')+'</tbody></table>':'<span class="fmini">　目前沒有</span>')+'</div>';
+    h+='<div class="pg-list"><b>⏳ 等 ESG 確認（'+wl.length+'）</b>'+(wl.length?'<table><thead><tr><th>廠區</th><th>類別</th><th>送出</th><th>時間</th><th></th></tr></thead><tbody>'+wl.map(r=>'<tr><td>'+esc(fpSiteName(r.site_id))+'</td><td>'+esc(cname(r.category_id))+(r.no_data?'（本年沒有：'+esc(r.no_data_reason||'')+'）':'')+'</td><td>'+esc(String(r.submitted_by||'').replace(/@.*/,''))+'</td><td>'+esc(ghgTm(r.submitted_at||''))+'</td><td><a href="javascript:void(0)" onclick="progGo(&#39;'+r.site_id+'&#39;,&#39;'+r.category_id+'&#39;,'+Y+')">前往 →</a></td></tr>').join('')+'</tbody></table>':'<span class="fmini">　目前沒有</span>')+'</div>';
     box.innerHTML=h; }
   window.progRender=progRender;
   window.progReturnAll=async function(s,y){   /* V129-40-1：整廠退回＝這廠這年已通過的類別一次退回（資料庫守門員照樣檢查：只有 esg／admin、年度要開放） */
