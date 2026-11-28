@@ -15690,7 +15690,7 @@ function rfDeclView(rows){   /* V129-75：冷媒已申報年度（2022–2025）
     const adj=gOK?G.g-LS:0;
     if(gOK&&Math.abs(adj)>=0.00005)h+='<tr class="fdadj"'+hv('adj')+'><td class="tl" colspan="6">換回當初收割的數字：全集團頁用收割原值 '+f4(G.hv!=null?G.hv:G.g)+' t</td><td class="R x">'+sg(adj)+'</td><td class="R x">'+sg(-adj)+'</td></tr>';
     const rx=v=>+rff(v,4).replace(/,/g,'');
-    h+='<tr class="fdtot"><td class="tl" colspan="2">合計 ＝ ②</td><td></td><td>'+rff(o0(L),0)+'</td><td></td><td></td><td class="R">'+(gOK?f4(G.g):f4(LS)+' <span class="fmini">（② 讀不到，這是清冊合計）</span>')+'</td><td class="R">'+(gOK?sg(+(rx(q1)-rx(G.g)).toFixed(4)+0):'—')+'</td></tr></table>';
+    h+='<tr class="fdtot"><td class="tl" colspan="2">合計 ＝ ②</td><td></td><td>'+rff(o0(L),4)+'</td><td></td><td></td><td class="R">'+(gOK?f4(G.g):f4(LS)+' <span class="fmini">（② 讀不到，這是清冊合計）</span>')+'</td><td class="R">'+(gOK?sg(+(rx(q1)-rx(G.g)).toFixed(4)+0):'—')+'</td></tr></table>';
     h+='<div class="fmini" style="margin:3px 0 6px;color:#5f7268">游標移到任一列，上下表同一種冷媒一起亮。清冊是每種冷媒的小計，沒有台數。橘底＝跟上表不一樣（充填量看這種冷媒清冊各列加起來）；「跟上表差」＝上表減下表（每種冷媒一格），加起來＝差額。'+(z0?'GWP 記 0 的冷媒，逸散率不同也不影響碳排，所以「差在哪裡」不列。':'')+(nf0?'逸散率、GWP 顯示「—」＝清冊這列只記碳排、沒記逸散率／GWP。':'')+(L.some(x=>x.ton)?'清冊單位記公噸的列，充填量已換成公斤。':'')+'</div></div>'; }
   if(W10.note)h+='<details open style="margin:6px 0 0"><summary class="fmini" style="cursor:pointer;color:#7a5a00">差異說明</summary><div style="margin:4px 0 0;padding:6px 10px;border:1px solid #f0d9a0;background:#fffbeb;border-radius:8px;font-size:12.5px;line-height:1.55;color:#5c4400">'+rfesc(W10.note).replace(/\n/g,'<br>')+'</div></details>';
   return h;
